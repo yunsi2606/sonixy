@@ -1,0 +1,163 @@
+version: '3.8'
+
+name: sonixy
+
+services:
+  # MongoDB
+  mongodb:
+    image: mongo:7.0
+    container_name: sonixy-mongodb
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-SonixyAdmin123!}
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - sonixy-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Identity Service
+  identity-service:
+    build:
+      context: .
+      dockerfile: Sonixy.IdentityService/Dockerfile
+    container_name: sonixy-identity
+    restart: always
+    ports:
+      - "5008:8088"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8088
+      - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
+      - MongoDB__DatabaseName=sonixy_identity
+      - Jwt__SecretKey=${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast32CharactersLongForHS256}
+      - Jwt__Issuer=Sonixy.IdentityService
+      - Jwt__Audience=Sonixy.Client
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - sonixy-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5008/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # User Service
+  user-service:
+    build:
+      context: .
+      dockerfile: Sonixy.UserService/Dockerfile
+    container_name: sonixy-user
+    restart: always
+    ports:
+      - "5009:8089"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8089
+      - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
+      - MongoDB__DatabaseName=sonixy_users
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - sonixy-network
+
+  # Post Service
+  post-service:
+    build:
+      context: .
+      dockerfile: Sonixy.PostService/Dockerfile
+    container_name: sonixy-post
+    restart: always
+    ports:
+      - "5010:8090"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8090
+      - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
+      - MongoDB__DatabaseName=sonixy_posts
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - sonixy-network
+
+  # Social Graph Service
+  social-service:
+    build:
+      context: .
+      dockerfile: Sonixy.SocialGraphService/Dockerfile
+    container_name: sonixy-social
+    restart: always
+    ports:
+      - "5011:8091"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8091
+      - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
+      - MongoDB__DatabaseName=sonixy_social
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - sonixy-network
+
+  # API Gateway
+  gateway:
+    build:
+      context: .
+      dockerfile: Sonixy.Gateway/Dockerfile
+    container_name: sonixy-gateway
+    restart: always
+    ports:
+      - "5100:8100"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8100
+      - Jwt__SecretKey=${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast32CharactersLongForHS256}
+      - Jwt__Issuer=Sonixy.IdentityService
+      - Jwt__Audience=Sonixy.Client
+    depends_on:
+      - identity-service
+      - user-service
+      - post-service
+      - social-service
+    networks:
+      - sonixy-network
+
+  # Cloudflare Tunnel
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: sonixy-tunnel
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+    depends_on:
+      - gateway
+    networks:
+      - sonixy-network
+    mem_limit: 128m
+    mem_reservation: 64m
+    cpus: 0.25
+    restart: unless-stopped
+    # No ports exposed - tunnel handles everything
+
+networks:
+  sonixy-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local

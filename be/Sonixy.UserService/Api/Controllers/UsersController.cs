@@ -1,0 +1,141 @@
+using Microsoft.AspNetCore.Mvc;
+using Sonixy.UserService.Application.DTOs;
+using Sonixy.UserService.Application.Services;
+
+namespace Sonixy.UserService.Api.Controllers;
+
+/// <summary>
+/// User profile management endpoints
+/// </summary>
+[ApiController]
+[Route("api/[controller]")]
+[Produces("application/json")]
+public class UsersController(IUserService userService, ILogger<UsersController> logger) : ControllerBase
+{
+    private readonly ILogger<UsersController> _logger = logger;
+
+    /// <summary>
+    /// Creates a new user profile
+    /// </summary>
+    /// <remarks>
+    /// Sample request:
+    /// 
+    ///     POST /api/users
+    ///     {
+    ///       "displayName": "John Doe",
+    ///       "email": "john.doe@example.com",
+    ///       "bio": "Software Engineer at TechCorp",
+    ///       "avatarUrl": "https://example.com/avatar.jpg"
+    ///     }
+    /// 
+    /// </remarks>
+    /// <param name="dto">User creation data</param>
+    /// <returns>The newly created user</returns>
+    /// <response code="201">User created successfully</response>
+    /// <response code="400">Invalid request - validation failed or email already exists</response>
+    [HttpPost]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserDto dto)
+    {
+        try
+        {
+            var user = await userService.CreateUserAsync(dto);
+            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Retrieves a user profile by ID
+    /// </summary>
+    /// <param name="id">User ID</param>
+    /// <returns>User profile</returns>
+    /// <response code="200">User found</response>
+    /// <response code="404">User not found</response>
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetUser(string id)
+    {
+        var user = await userService.GetUserByIdAsync(id);
+        
+        if (user is null)
+            return NotFound(new { error = "User not found" });
+
+        return Ok(user);
+    }
+
+    /// <summary>
+    /// Updates a user profile
+    /// </summary>
+    /// <remarks>
+    /// Only provided fields will be updated. Email cannot be changed.
+    /// 
+    /// Sample request:
+    /// 
+    ///     PATCH /api/users/507f1f77bcf86cd799439011
+    ///     {
+    ///       "displayName": "Jane Doe",
+    ///       "bio": "Senior Developer"
+    ///     }
+    /// 
+    /// </remarks>
+    /// <param name="id">User ID</param>
+    /// <param name="dto">Update data</param>
+    /// <returns>Updated user profile</returns>
+    /// <response code="200">User updated successfully</response>
+    /// <response code="404">User not found</response>
+    /// <response code="400">Invalid user ID</response>
+    [HttpPatch("{id}")]
+    [ProducesResponseType(typeof(UserDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateUser(string id, [FromBody] UpdateUserDto dto)
+    {
+        try
+        {
+            var user = await userService.UpdateUserAsync(id, dto);
+            return Ok(user);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Batch retrieves multiple users by their IDs
+    /// </summary>
+    /// <remarks>
+    /// Efficiently fetches multiple user profiles in a single request.
+    /// Used internally by other services to enrich data.
+    /// 
+    /// Sample request:
+    /// 
+    ///     POST /api/users/batch
+    ///     {
+    ///       "ids": ["507f1f77bcf86cd799439011", "507f191e810c19729de860ea"]
+    ///     }
+    /// 
+    /// </remarks>
+    /// <param name="request">List of user IDs</param>
+    /// <returns>List of user profiles</returns>
+    /// <response code="200">Users retrieved successfully</response>
+    [HttpPost("batch")]
+    [ProducesResponseType(typeof(IEnumerable<UserDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetUsersBatch([FromBody] BatchUserRequest request)
+    {
+        var users = await userService.GetUsersBatchAsync(request.Ids);
+        return Ok(users);
+    }
+}
+
+public record BatchUserRequest(IEnumerable<string> Ids);

@@ -1,0 +1,168 @@
+{
+    "Routes": [
+        {
+            "DownstreamPathTemplate": "/api/Auth/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "identity-service",
+                    "Port": 8088
+                }
+            ],
+            "UpstreamPathTemplate": "/api/identity/{everything}",
+            "UpstreamHttpMethod": [
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE"
+            ],
+            "Key": "identity-service",
+            "RateLimitOptions": {
+                "EnableRateLimiting": true,
+                "Period": "1m",
+                "PeriodTimespan": 60,
+                "Limit": 100
+            }
+        },
+        {
+            "DownstreamPathTemplate": "/api/Users/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "user-service",
+                    "Port": 8089
+                }
+            ],
+            "UpstreamPathTemplate": "/api/users/{everything}",
+            "UpstreamHttpMethod": [
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE"
+            ],
+            "Key": "user-service",
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer"
+            },
+            "RateLimitOptions": {
+                "EnableRateLimiting": true,
+                "Period": "1m",
+                "PeriodTimespan": 60,
+                "Limit": 200
+            }
+        },
+        {
+            "DownstreamPathTemplate": "/api/Posts/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "post-service",
+                    "Port": 8090
+                }
+            ],
+            "UpstreamPathTemplate": "/api/posts/{everything}",
+            "UpstreamHttpMethod": [
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE"
+            ],
+            "Key": "post-service",
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer"
+            },
+            "RateLimitOptions": {
+                "EnableRateLimiting": true,
+                "Period": "1m",
+                "PeriodTimespan": 60,
+                "Limit": 300
+            }
+        },
+        {
+            "DownstreamPathTemplate": "/api/Follows/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "social-service",
+                    "Port": 8091
+                }
+            ],
+            "UpstreamPathTemplate": "/api/social/{everything}",
+            "UpstreamHttpMethod": [
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE"
+            ],
+            "Key": "social-service",
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer"
+            },
+            "RateLimitOptions": {
+                "EnableRateLimiting": true,
+                "Period": "1m",
+                "PeriodTimespan": 60,
+                "Limit": 200
+            }
+        }
+    ],
+    "SwaggerEndPoints": [
+        {
+            "Key": "identity-service",
+            "Config": [
+                {
+                    "Name": "Identity Service",
+                    "Version": "v1",
+                    "Url": "http://identity-service:8088/swagger/v1/swagger.json",
+                    "RoutePrefix": "identity"
+                }
+            ]
+        },
+        {
+            "Key": "user-service",
+            "Config": [
+                {
+                    "Name": "User Service",
+                    "Version": "v1",
+                    "Url": "http://user-service:8089/swagger/v1/swagger.json",
+                    "RoutePrefix": "users"
+                }
+            ]
+        },
+        {
+            "Key": "post-service",
+            "Config": [
+                {
+                    "Name": "Post Service",
+                    "Version": "v1",
+                    "Url": "http://post-service:8090/swagger/v1/swagger.json",
+                    "RoutePrefix": "posts"
+                }
+            ]
+        },
+        {
+            "Key": "social-service",
+            "Config": [
+                {
+                    "Name": "Social Graph Service",
+                    "Version": "v1",
+                    "Url": "http://social-service:8091/swagger/v1/swagger.json",
+                    "RoutePrefix": "social"
+                }
+            ]
+        }
+    ],
+    "GlobalConfiguration": {
+        "BaseUrl": "http://gateway:8100",
+        "RateLimitOptions": {
+            "DisableRateLimitHeaders": false,
+            "QuotaExceededMessage": "Rate limit exceeded. Please try again later.",
+            "HttpStatusCode": 429,
+            "ClientIdHeader": "ClientId"
+        }
+    }
+}

@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+option csharp_namespace = "Sonixy.Shared.Protos";
+
+package user;
+
+// User service for profile queries
+service UserService {
+  // Get single user by ID
+  rpc GetUser (GetUserRequest) returns (GetUserResponse);
+  
+  // Get multiple users by IDs (for feed enrichment)
+  rpc GetUsersBatch (GetUsersBatchRequest) returns (GetUsersBatchResponse);
+  
+  // Check if user exists
+  rpc UserExists (UserExistsRequest) returns (UserExistsResponse);
+}
+
+message GetUserRequest {
+  string user_id = 1;
+}
+
+message GetUserResponse {
+  string id = 1;
+  string display_name = 2;
+  string email = 3;
+  string bio = 4;
+  string avatar_url = 5;
+  string created_at = 6;
+}
+
+message GetUsersBatchRequest {
+  repeated string user_ids = 1;
+}
+
+message GetUsersBatchResponse {
+  repeated UserDto users = 1;
+}
+
+message UserDto {
+  string id = 1;
+  string display_name = 2;
+  string email = 3;
+  string bio = 4;
+  string avatar_url = 5;
+}
+
+message UserExistsRequest {
+  string user_id = 1;
+}
+
+message UserExistsResponse {
+  bool exists = 1;
+}

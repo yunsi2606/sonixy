@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+option csharp_namespace = "Sonixy.Shared.Protos";
+
+package identity;
+
+// Identity validation service for other services
+service IdentityService {
+  // Validate access token and return user ID
+  rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
+  
+  // Get user claims from token
+  rpc GetUserClaims (GetUserClaimsRequest) returns (GetUserClaimsResponse);
+}
+
+message ValidateTokenRequest {
+  string access_token = 1;
+}
+
+message ValidateTokenResponse {
+  bool is_valid = 1;
+  string user_id = 2;
+  string error_message = 3;
+}
+
+message GetUserClaimsRequest {
+  string user_id = 1;
+}
+
+message GetUserClaimsResponse {
+  string user_id = 1;
+  string email = 2;
+  bool is_active = 3;
+}

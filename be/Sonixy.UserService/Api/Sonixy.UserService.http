@@ -1,0 +1,6 @@
+@Sonixy.UserService_HostAddress = http://localhost:5187
+
+GET {{Sonixy.UserService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

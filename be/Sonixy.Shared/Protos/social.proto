@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+option csharp_namespace = "Sonixy.Shared.Protos";
+
+package social;
+
+// Social graph service for relationships
+service SocialGraphService {
+  // Get list of user IDs that a user follows
+  rpc GetFollowing (GetFollowingRequest) returns (GetFollowingResponse);
+  
+  // Get list of user IDs following a user
+  rpc GetFollowers (GetFollowersRequest) returns (GetFollowersResponse);
+  
+  // Check if user A follows user B
+  rpc IsFollowing (IsFollowingRequest) returns (IsFollowingResponse);
+  
+  // Get like count for a post
+  rpc GetLikeCount (GetLikeCountRequest) returns (GetLikeCountResponse);
+  
+  // Check if user liked a post
+  rpc HasLiked (HasLikedRequest) returns (HasLikedResponse);
+}
+
+message GetFollowingRequest {
+  string user_id = 1;
+  int32 limit = 2;
+}
+
+message GetFollowingResponse {
+  repeated string user_ids = 1;
+}
+
+message GetFollowersRequest {
+  string user_id = 1;
+  int32 limit = 2;
+}
+
+message GetFollowersResponse {
+  repeated string user_ids = 1;
+}
+
+message IsFollowingRequest {
+  string follower_id = 1;
+  string following_id = 2;
+}
+
+message IsFollowingResponse {
+  bool is_following = 1;
+}
+
+message GetLikeCountRequest {
+  string post_id = 1;
+}
+
+message GetLikeCountResponse {
+  int32 count = 1;
+}
+
+message HasLikedRequest {
+  string user_id = 1;
+  string post_id = 2;
+}
+
+message HasLikedResponse {
+  bool has_liked = 1;
+}
