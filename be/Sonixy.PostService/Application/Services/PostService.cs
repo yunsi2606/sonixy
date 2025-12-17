@@ -18,24 +18,25 @@ public class PostService(IPostRepository postRepository) : IPostService
             AuthorId = authorObjectId,
             Content = dto.Content,
             Visibility = dto.Visibility,
-            LikeCount = 0
+            LikeCount = 0,
+            LikedBy = []
         };
 
         await postRepository.AddAsync(post, cancellationToken);
 
-        return MapToDto(post);
+        return MapToDto(post, authorId);
     }
 
-    public async Task<PostDto?> GetPostByIdAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<PostDto?> GetPostByIdAsync(string id, string? currentUserId = null, CancellationToken cancellationToken = default)
     {
         if (!ObjectId.TryParse(id, out var objectId))
             return null;
 
         var post = await postRepository.GetByIdAsync(objectId, cancellationToken);
-        return post is not null ? MapToDto(post) : null;
+        return post is not null ? MapToDto(post, currentUserId) : null;
     }
 
-    public async Task<CursorPage<PostDto>> GetFeedAsync(string? cursor, int pageSize = 20, CancellationToken cancellationToken = default)
+    public async Task<CursorPage<PostDto>> GetFeedAsync(string? cursor, string? currentUserId = null, int pageSize = 20, CancellationToken cancellationToken = default)
     {
         var spec = new FeedSpecification(cursor, pageSize + 1);
         var posts = (await postRepository.FindAsync(spec, cancellationToken)).ToList();
@@ -48,13 +49,13 @@ public class PostService(IPostRepository postRepository) : IPostService
             : null;
 
         return new CursorPage<PostDto>(
-            itemsToReturn.Select(MapToDto),
+            itemsToReturn.Select(p => MapToDto(p, currentUserId)),
             nextCursor,
             hasMore
         );
     }
 
-    public async Task<CursorPage<PostDto>> GetUserPostsAsync(string userId, string? cursor, int pageSize = 20, CancellationToken cancellationToken = default)
+    public async Task<CursorPage<PostDto>> GetUserPostsAsync(string userId, string? cursor, string? currentUserId = null, int pageSize = 20, CancellationToken cancellationToken = default)
     {
         if (!ObjectId.TryParse(userId, out var userObjectId))
             return new CursorPage<PostDto>([], null, false);
@@ -70,19 +71,55 @@ public class PostService(IPostRepository postRepository) : IPostService
             : null;
 
         return new CursorPage<PostDto>(
-            itemsToReturn.Select(MapToDto),
+            itemsToReturn.Select(p => MapToDto(p, currentUserId)),
             nextCursor,
             hasMore
         );
     }
 
-    private static PostDto MapToDto(Post post) => new(
-        post.Id.ToString(),
-        post.AuthorId.ToString(),
-        post.Content,
-        post.Visibility,
-        post.LikeCount,
-        post.CreatedAt,
-        post.UpdatedAt
-    );
+    public async Task<bool> ToggleLikeAsync(string postId, string userId, CancellationToken cancellationToken = default)
+    {
+        if (!ObjectId.TryParse(postId, out var postObjectId) || !ObjectId.TryParse(userId, out var userObjectId))
+            return false;
+
+        var post = await postRepository.GetByIdAsync(postObjectId, cancellationToken);
+        if (post is null) return false;
+
+        // Ensure LikedBy is initialized (prevent potential nulls if DB has old docs)
+        post.LikedBy ??= [];
+
+        if (post.LikedBy.Contains(userObjectId))
+        {
+            post.LikedBy.Remove(userObjectId);
+            post.LikeCount = Math.Max(0, post.LikeCount - 1);
+        }
+        else
+        {
+            post.LikedBy.Add(userObjectId);
+            post.LikeCount++;
+        }
+
+        await postRepository.UpdateAsync(post, cancellationToken);
+        return true;
+    }
+
+    private static PostDto MapToDto(Post post, string? currentUserId)
+    {
+        var isLiked = false;
+        if (!string.IsNullOrEmpty(currentUserId) && ObjectId.TryParse(currentUserId, out var userObjectId))
+        {
+            isLiked = post.LikedBy?.Contains(userObjectId) ?? false;
+        }
+
+        return new PostDto(
+            post.Id.ToString(),
+            post.AuthorId.ToString(),
+            post.Content,
+            post.Visibility,
+            post.LikeCount,
+            isLiked,
+            post.CreatedAt,
+            post.UpdatedAt
+        );
+    }
 }

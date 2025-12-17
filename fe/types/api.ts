@@ -31,6 +31,7 @@ export interface Post {
     content: string;
     visibility: 'public' | 'followers';
     likeCount: number;
+    isLiked?: boolean;
     createdAt: string;
     updatedAt: string;
 }

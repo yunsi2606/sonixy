@@ -9,4 +9,5 @@ public class Post : Entity
     public required string Content { get; set; }
     public string Visibility { get; set; } = "public"; // "public" | "followers"
     public int LikeCount { get; set; } // Denormalized for performance
+    public List<ObjectId> LikedBy { get; set; } = [];
 }

@@ -99,7 +99,13 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
 
             {/* Actions */}
             <div className={`flex items-center ${variant === 'compact' ? 'gap-6 pt-1' : 'pt-2 border-t border-[var(--glass-border)]'}`}>
-                <ActionButton icon="❤️" count={post.likeCount} onClick={() => onLike?.(post.id)} activeColor="text-pink-500" />
+                <ActionButton
+                    icon={post.isLiked ? "❤️" : "🤍"}
+                    count={post.likeCount}
+                    onClick={() => onLike?.(post.id)}
+                    activeColor={post.isLiked ? "text-red-500 scale-110" : "text-pink-500"}
+                    isActive={post.isLiked}
+                />
                 <ActionButton icon="💬" count="Comment" onClick={() => onComment?.(post.id)} activeColor="text-[var(--color-primary)]" />
                 <ActionButton icon="📤" count="Share" activeColor="text-[var(--color-secondary)]" className="ml-auto" />
             </div>
@@ -108,17 +114,17 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
 }
 
 // Sub-component for buttons to reduce repetition
-function ActionButton({ icon, count, onClick, activeColor, className = "" }: any) {
+function ActionButton({ icon, count, onClick, activeColor, className = "", isActive }: any) {
     return (
         <button
             onClick={onClick}
             className={`group/btn flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all outline-none ${className}`}
         >
-            <span className={`text-lg group-hover/btn:scale-110 transition-transform duration-200 grayscale group-hover/btn:grayscale-0 ${activeColor}`}>
+            <span className={`text-lg group-hover/btn:scale-110 transition-transform duration-200 ${isActive ? '' : 'grayscale group-hover/btn:grayscale-0'} ${activeColor}`}>
                 {icon}
             </span>
             {count && (
-                <span className={`text-xs font-medium text-[var(--color-text-muted)] group-hover/btn:text-white`}>
+                <span className={`text-xs font-medium ${isActive ? 'text-white' : 'text-[var(--color-text-muted)] group-hover/btn:text-white'}`}>
                     {count}
                 </span>
             )}

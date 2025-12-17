@@ -6,6 +6,7 @@ public record PostDto(
     string Content,
     string Visibility,
     int LikeCount,
+    bool IsLiked,
     DateTime CreatedAt,
     DateTime UpdatedAt
 );
