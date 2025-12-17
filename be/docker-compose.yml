@@ -36,7 +36,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8088
-      - CORS__AllowedOrigins=https://sonixy.nhatcuong.io.vn
+      - CORS__AllowOrigins=https://sonixy.nhatcuong.io.vn
       - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
       - MongoDB__DatabaseName=sonixy_identity
       - Jwt__SecretKey=${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast32CharactersLongForHS256}
@@ -48,7 +48,7 @@ services:
     networks:
       - sonixy-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5008/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:5008/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -65,7 +65,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8089
-      - CORS__AllowedOrigins=https://sonixy.nhatcuong.io.vn
+      - CORS__AllowOrigins=https://sonixy.nhatcuong.io.vn
       - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
       - MongoDB__DatabaseName=sonixy_users
     depends_on:
@@ -86,7 +86,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8090
-      - CORS__AllowedOrigins=https://sonixy.nhatcuong.io.vn
+      - CORS__AllowOrigins=https://sonixy.nhatcuong.io.vn
       - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
       - MongoDB__DatabaseName=sonixy_posts
     volumes:
@@ -109,7 +109,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8091
-      - CORS__AllowedOrigins=https://sonixy.nhatcuong.io.vn
+      - CORS__AllowOrigins=https://sonixy.nhatcuong.io.vn
       - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
       - MongoDB__DatabaseName=sonixy_social
     depends_on:
@@ -130,7 +130,7 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8100
-      - CORS__AllowedOrigins=https://sonixy.nhatcuong.io.vn
+      - CORS__AllowOrigins=https://sonixy.nhatcuong.io.vn
       - Jwt__SecretKey=${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast32CharactersLongForHS256}
       - Jwt__Issuer=Sonixy.IdentityService
       - Jwt__Audience=Sonixy.Client
@@ -141,6 +141,28 @@ services:
       - social-service
     networks:
       - sonixy-network
+
+  # MinIO (S3-compatible Object Storage)
+  minio:
+    image: minio/minio
+    container_name: sonixy-minio
+    volumes:
+      - minio_data:/data
+    ports:
+      - "9100:9000" # API for Host
+      - "9101:9001" # Console for Host
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-SonixyMinio123!}
+      MINIO_BROWSER_REDIRECT_URL: "https://minio.sonixy.nhatcuong.io.vn" # External URL
+    command: server /data --console-address ":9001"
+    networks:
+      - sonixy-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
+      interval: 30s
+      timeout: 20s
+      retries: 3
 
   # Cloudflare Tunnel
   cloudflared:
@@ -167,4 +189,6 @@ volumes:
   mongodb_data:
     driver: local
   mongodb_config:
+    driver: local
+  minio_data:
     driver: local

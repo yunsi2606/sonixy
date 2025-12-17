@@ -13,20 +13,43 @@ export const postService = {
     },
 
     async createPost(content: string, visibility: 'public' | 'followers' = 'public', files?: File[]): Promise<Post> {
-        const formData = new FormData();
-        formData.append('content', content);
-        formData.append('visibility', visibility);
+        const mediaItems: { type: 'image' | 'video', objectKey: string }[] = [];
 
-        if (files) {
-            files.forEach(file => formData.append('media', file));
+        if (files && files.length > 0) {
+            // Upload each file sequentially (or parallel if preferred, but sequential is safer for rate limits/order)
+            // Using parallel here for speed as MinIO can handle it
+            const uploadPromises = files.map(async (file) => {
+                // 1. Get Presigned URL
+                const { uploadUrl, objectKey } = await apiClient.post<{ uploadUrl: string, objectKey: string }>(
+                    '/api/posts/presigned-url',
+                    { fileName: file.name, contentType: file.type }
+                );
+
+                // 2. Upload to MinIO directly
+                await fetch(uploadUrl, {
+                    method: 'PUT',
+                    body: file,
+                    headers: {
+                        'Content-Type': file.type
+                    }
+                });
+
+                return {
+                    type: file.type.startsWith('video') ? 'video' as const : 'image' as const,
+                    objectKey
+                };
+            });
+
+            const results = await Promise.all(uploadPromises);
+            mediaItems.push(...results);
         }
 
-        // Note: ApiClient needs update to handle FormData, or we use fetch directly here for specific override
-        // Assuming ApiClient handles it or we bypass it partially. 
-        // Let's modify ApiClient or just use a specialized call. 
-        // For simplicity, adapting ApiClient.post to check if data is FormData.
-
-        return apiClient.post<Post>('/api/posts', formData);
+        // 3. Create Post with Media References
+        return apiClient.post<Post>('/api/posts', {
+            content,
+            visibility,
+            media: mediaItems
+        });
     },
 
     async toggleLike(postId: string): Promise<{ success: boolean }> {

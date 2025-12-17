@@ -12,5 +12,7 @@ public class CreatePostWithMediaDto
     [Required] 
     public string Visibility { get; set; } = "public";
 
-    public List<IFormFile>? Media { get; set; }
+    public List<MediaItemUploadDto>? Media { get; set; }
 }
+
+public record MediaItemUploadDto(string Type, string ObjectKey);

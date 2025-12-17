@@ -16,12 +16,23 @@ public class PostsController(IPostService postService) : ControllerBase
     private const string TestUserId = "507f1f77bcf86cd799439011"; 
 
     /// <summary>
-    /// Creates a new post
+    /// Generates a presigned URL for direct file upload to MinIO
+    /// </summary>
+    [HttpPost("presigned-url")]
+    [ProducesResponseType(typeof(PresignedUrlResponseDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GeneratePresignedUrl([FromBody] PresignedUrlRequestDto request)
+    {
+        var (uploadUrl, objectKey, publicUrl) = await postService.GeneratePresignedUrlAsync(request.FileName, request.ContentType);
+        return Ok(new PresignedUrlResponseDto(uploadUrl, objectKey, publicUrl));
+    }
+
+    /// <summary>
+    /// Creates a new post with media references
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(PostDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreatePost([FromForm] CreatePostWithMediaDto dto)
+    public async Task<IActionResult> CreatePost([FromBody] CreatePostWithMediaDto dto)
     {
         var post = await postService.CreatePostAsync(dto, TestUserId);
         return CreatedAtAction(nameof(GetPost), new { id = post.Id }, post);

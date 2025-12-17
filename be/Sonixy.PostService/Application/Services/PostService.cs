@@ -1,14 +1,26 @@
-using Microsoft.AspNetCore.Hosting;
 using MongoDB.Bson;
+using Sonixy.PostService.Infrastructure.Storage;
+using Microsoft.Extensions.Options;
 using Sonixy.PostService.Application.DTOs;
 using Sonixy.PostService.Domain.Entities;
 using Sonixy.PostService.Domain.Repositories;
+using Sonixy.PostService.Application.Interfaces;
 using Sonixy.Shared.Pagination;
 
 namespace Sonixy.PostService.Application.Services;
 
-public class PostService(IPostRepository postRepository, IWebHostEnvironment environment) : IPostService
+public class PostService(
+    IPostRepository postRepository,
+    IMediaStorage mediaStorage,
+    IOptions<MinioOptions> minioOptions) : IPostService
 {
+    private readonly MinioOptions _minioOptions = minioOptions.Value;
+    
+    public async Task<(string UploadUrl, string ObjectKey, string PublicUrl)> GeneratePresignedUrlAsync(string fileName, string contentType, CancellationToken cancellationToken = default)
+    {
+        return await mediaStorage.GeneratePresignedUploadUrlAsync(fileName, contentType, cancellationToken);
+    }
+
     public async Task<PostDto> CreatePostAsync(CreatePostWithMediaDto dto, string authorId, CancellationToken cancellationToken = default)
     {
         if (!ObjectId.TryParse(authorId, out var authorObjectId))
@@ -16,29 +28,14 @@ public class PostService(IPostRepository postRepository, IWebHostEnvironment env
 
         var mediaItems = new List<MediaItem>();
 
-        // Handle Media Uploads
         if (dto.Media != null && dto.Media.Count > 0)
         {
-            var uploadsFolder = Path.Combine(environment.WebRootPath, "uploads");
-            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-            foreach (var file in dto.Media)
+            foreach (var item in dto.Media)
             {
-                 if (file.Length > 0)
-                 {
-                     var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
-                     var filePath = Path.Combine(uploadsFolder, fileName);
-                     
-                     using (var stream = new FileStream(filePath, FileMode.Create))
-                     {
-                         await file.CopyToAsync(stream, cancellationToken);
-                     }
-
-                     var type = file.ContentType.StartsWith("video") ? "video" : "image";
-                     // Assuming API Gateway or Static File Middleware serves from /uploads
-                     var url = $"/uploads/{fileName}"; 
-                     mediaItems.Add(new MediaItem(type, url));
-                 }
+                var host = !string.IsNullOrEmpty(_minioOptions.PublicUrl) ? _minioOptions.PublicUrl : $"{(_minioOptions.UseSSL ? "https" : "http")}://{_minioOptions.Endpoint}";
+                var fullUrl = $"{host}/{_minioOptions.Bucket}/{item.ObjectKey}";
+                
+                mediaItems.Add(new MediaItem(item.Type, fullUrl)); 
             }
         }
 

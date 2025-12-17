@@ -4,6 +4,10 @@ using MongoDB.Driver;
 using Sonixy.PostService.Application.Services;
 using Sonixy.PostService.Domain.Repositories;
 using Sonixy.PostService.Infrastructure.Repositories;
+using Sonixy.PostService.Infrastructure.Storage;
+using Sonixy.PostService.Application.Interfaces;
+using Minio;
+using Microsoft.Extensions.Options;
 using Sonixy.Shared.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +32,21 @@ builder.Services.AddScoped(sp =>
 });
 
 // Repository & Service Registration
+// MinIO Configuration
+builder.Services.Configure<MinioOptions>(builder.Configuration.GetSection("Minio"));
+
+builder.Services.AddSingleton<IMinioClient>(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<MinioOptions>>().Value;
+    return new MinioClient()
+        .WithEndpoint(options.Endpoint)
+        .WithCredentials(options.AccessKey, options.SecretKey)
+        .WithSSL(options.UseSSL)
+        .Build();
+});
+
+builder.Services.AddScoped<IMediaStorage, MinioMediaStorage>();
+
 builder.Services.AddScoped<IPostRepository, PostRepository>();
 builder.Services.AddScoped<IPostService, PostService>();
 
