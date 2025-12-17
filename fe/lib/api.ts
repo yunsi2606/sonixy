@@ -15,7 +15,13 @@ class ApiClient {
         endpoint: string,
         options: RequestOptions = {}
     ): Promise<T> {
-        const { token, ...fetchOptions } = options;
+        let { token, ...fetchOptions } = options;
+
+        // Auto-inject token from cookies if not provided
+        if (!token && typeof window !== 'undefined') {
+            const Cookies = (await import('js-cookie')).default;
+            token = Cookies.get('accessToken');
+        }
 
         const headers: Record<string, string> = {
             ...(fetchOptions.headers as Record<string, string>),

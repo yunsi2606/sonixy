@@ -1,5 +1,6 @@
 import { apiClient } from '@/lib/api';
 import type { AuthResponse, RegisterDto, LoginDto } from '@/types/api';
+import Cookies from 'js-cookie';
 
 const AUTH_BASE = '/api/identity';
 
@@ -20,33 +21,29 @@ export const authService = {
         return apiClient.post<void>(`${AUTH_BASE}/revoke`, { refreshToken });
     },
 
-    // Token management in localStorage
+    // Token management with Cookies
     getAccessToken(): string | null {
-        if (typeof window === 'undefined') return null;
-        return localStorage.getItem('accessToken');
+        return Cookies.get('accessToken') || null;
     },
 
     getRefreshToken(): string | null {
-        if (typeof window === 'undefined') return null;
-        return localStorage.getItem('refreshToken');
+        return Cookies.get('refreshToken') || null;
     },
 
     saveTokens(auth: AuthResponse): void {
-        if (typeof window === 'undefined') return;
-        localStorage.setItem('accessToken', auth.accessToken);
-        localStorage.setItem('refreshToken', auth.refreshToken);
-        localStorage.setItem('userId', auth.userId);
+        const expiresInDays = 7; // Typical refresh token life
+        Cookies.set('accessToken', auth.accessToken, { expires: 1, sameSite: 'Strict', secure: process.env.NODE_ENV === 'production' });
+        Cookies.set('refreshToken', auth.refreshToken, { expires: expiresInDays, sameSite: 'Strict', secure: process.env.NODE_ENV === 'production' });
+        Cookies.set('userId', auth.userId, { expires: expiresInDays, sameSite: 'Strict', secure: process.env.NODE_ENV === 'production' });
     },
 
     clearTokens(): void {
-        if (typeof window === 'undefined') return;
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('userId');
+        Cookies.remove('accessToken');
+        Cookies.remove('refreshToken');
+        Cookies.remove('userId');
     },
 
     getUserId(): string | null {
-        if (typeof window === 'undefined') return null;
-        return localStorage.getItem('userId');
+        return Cookies.get('userId') || null;
     },
 };
