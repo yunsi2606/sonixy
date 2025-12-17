@@ -1,4 +1,6 @@
-import React, { useState, useRef } from 'react';
+'use client';
+
+import { useState, useRef } from 'react';
 import { postService } from '@/services/post.service';
 
 interface CreatePostModalProps {
@@ -9,10 +11,17 @@ interface CreatePostModalProps {
 
 export function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePostModalProps) {
     const [content, setContent] = useState('');
+    const [visibility, setVisibility] = useState<'public' | 'followers'>('public');
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
+
+    // Media Upload State
     const [mediaFiles, setMediaFiles] = useState<File[]>([]);
     const [previews, setPreviews] = useState<{ url: string, type: 'image' | 'video' }[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const maxLength = 500;
+    const remainingChars = maxLength - content.length;
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -27,20 +36,26 @@ export function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePostModalP
         }
     };
 
-    const handleSubmit = async () => {
-        if (!content.trim() && mediaFiles.length === 0) return;
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!content.trim() && mediaFiles.length === 0) {
+            setError('Post content or media cannot be empty');
+            return;
+        }
 
         setIsLoading(true);
+        setError('');
+
         try {
-            await postService.createPost(content, 'public', mediaFiles);
+            await postService.createPost(content, visibility, mediaFiles);
             setContent('');
             setMediaFiles([]);
             setPreviews([]);
             onSuccess?.();
             onClose();
-        } catch (error) {
-            console.error('Failed to create post:', error);
-            alert('Failed to post. Please try again.');
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'Failed to create post');
         } finally {
             setIsLoading(false);
         }
@@ -49,90 +64,177 @@ export function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePostModalP
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            {/* Backdrop */}
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-[var(--animate-fade-in)]"
+            onClick={onClose}
+        >
             <div
-                className="absolute inset-0 bg-black/60 backdrop-blur-[8px] animate-[fade-in_0.2s_ease-out]"
-                onClick={onClose}
-            />
-
-            {/* Modal */}
-            <div className="relative w-full max-w-lg glass-overlay rounded-2xl shadow-lift overflow-hidden animate-[scale-in_0.3s_cubic-bezier(0.16,1,0.3,1)]">
+                className="w-full max-w-2xl glass-strong rounded-2xl shadow-2xl animate-[var(--animate-scale-in)] gradient-border overflow-hidden max-h-[90vh] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+            >
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-[var(--glass-border)]">
-                    <h2 className="text-lg font-bold text-white">Create Post</h2>
+                <div className="flex items-center justify-between p-6 border-b border-border shrink-0">
+                    <h2 className="text-3xl font-black gradient-text-vibrant">Create Post</h2>
                     <button
                         onClick={onClose}
                         disabled={isLoading}
-                        className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/70 hover:text-white"
+                        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface transition-colors text-text-muted hover:text-text-primary"
                     >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <span className="text-2xl">✕</span>
                     </button>
                 </div>
 
-                {/* Content */}
-                <div className="p-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                    <div className="flex gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] p-[2px] flex-shrink-0">
-                            <div className="w-full h-full rounded-full bg-[var(--color-bg-deep)]" />
+                {/* Scrollable Content */}
+                <div className="overflow-y-auto custom-scrollbar flex-1">
+                    <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                        {/* User Info */}
+                        <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary via-secondary to-accent p-0.5">
+                                <div className="w-full h-full rounded-full bg-bg-secondary flex items-center justify-center text-xl">
+                                    👤
+                                </div>
+                            </div>
+                            <div>
+                                <p className="font-bold text-text-primary">User</p>
+                                <p className="text-sm text-text-muted">Share your thoughts...</p>
+                            </div>
                         </div>
-                        <div className="flex-1">
+
+                        {/* Textarea */}
+                        <div className="relative">
                             <textarea
-                                placeholder="What's on your mind?"
-                                className="w-full bg-transparent text-lg text-white placeholder-white/30 resize-none outline-none min-h-[100px]"
                                 value={content}
-                                onChange={(e) => setContent(e.target.value)}
+                                onChange={(e) => setContent(e.target.value.slice(0, maxLength))}
+                                placeholder="What's on your mind? ✨"
+                                rows={5}
+                                className="w-full px-5 py-4 bg-surface/50 border-2 border-border rounded-xl focus:border-border-focus transition-all resize-none text-lg placeholder:text-text-muted"
+                                maxLength={maxLength}
                                 disabled={isLoading}
                             />
-
-                            {/* Media Previews */}
-                            {previews.length > 0 && (
-                                <div className="grid grid-cols-2 gap-2 mt-4">
-                                    {previews.map((preview, idx) => (
-                                        <div key={idx} className="relative aspect-video rounded-lg overflow-hidden bg-white/5 border border-[var(--glass-border)]">
-                                            {preview.type === 'video' ? (
-                                                <video src={preview.url} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <img src={preview.url} alt="Preview" className="w-full h-full object-cover" />
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                            <div className={`absolute bottom-3 right-3 text-sm font-semibold ${remainingChars < 50 ? 'text-accent' : 'text-text-muted'}`}>
+                                {remainingChars}
+                            </div>
                         </div>
-                    </div>
-                </div>
 
-                {/* Footer Actions */}
-                <div className="flex items-center justify-between p-4 border-t border-[var(--glass-border)] bg-white/5">
-                    <div className="flex items-center gap-2">
-                        <input
-                            type="file"
-                            multiple
-                            accept="image/*,video/*"
-                            className="hidden"
-                            ref={fileInputRef}
-                            onChange={handleFileSelect}
-                        />
-                        <button
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isLoading}
-                            className="p-2 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 rounded-full transition-colors"
-                        >
-                            <span className="sr-only">Media</span>
-                            📷/🎥
-                        </button>
-                    </div>
+                        {/* Media Previews */}
+                        {previews.length > 0 && (
+                            <div className="grid grid-cols-2 gap-3 mt-4 animate-fade-in">
+                                {previews.map((preview, idx) => (
+                                    <div key={idx} className="relative aspect-video rounded-xl overflow-hidden bg-black/20 border border-border group">
+                                        {preview.type === 'video' ? (
+                                            <video src={preview.url} className="w-full h-full object-cover" controls />
+                                        ) : (
+                                            <img src={preview.url} alt="Preview" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                        )}
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setMediaFiles(prev => prev.filter((_, i) => i !== idx));
+                                                setPreviews(prev => prev.filter((_, i) => i !== idx));
+                                            }}
+                                            className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-red-500/80 transition-colors opacity-0 group-hover:opacity-100"
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
 
-                    <button
-                        onClick={handleSubmit}
-                        disabled={isLoading || (!content.trim() && mediaFiles.length === 0)}
-                        className="btn-primary flex items-center gap-2 px-6 py-2 shadow-[var(--shadow-neon)] hover:shadow-[0_0_30px_rgba(0,229,255,0.4)] transition-shadow disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {isLoading ? 'Posting...' : 'Post'}
-                    </button>
+                        {/* Visibility Selector */}
+                        <div className="space-y-3">
+                            <label className="text-sm font-bold text-text-primary uppercase tracking-wide">
+                                Visibility
+                            </label>
+                            <div className="flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => setVisibility('public')}
+                                    className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${visibility === 'public'
+                                        ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-glow'
+                                        : 'bg-surface text-text-secondary hover:bg-surface-hover'
+                                        }`}
+                                >
+                                    <span className="mr-2">🌍</span>
+                                    Public
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setVisibility('followers')}
+                                    className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${visibility === 'followers'
+                                        ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-glow'
+                                        : 'bg-surface text-text-secondary hover:bg-surface-hover'
+                                        }`}
+                                >
+                                    <span className="mr-2">👥</span>
+                                    Followers
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Error Message */}
+                        {error && (
+                            <div className="card bg-red-500/10 border-red-500/30 p-4 animate-[var(--animate-scale-in)]">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xl">⚠️</span>
+                                    <p className="text-red-400 font-medium">{error}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex items-center justify-between pt-4 border-t border-border">
+                            <div className="flex gap-3">
+                                <input
+                                    type="file"
+                                    multiple
+                                    accept="image/*,video/*"
+                                    className="hidden"
+                                    ref={fileInputRef}
+                                    onChange={handleFileSelect}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="w-12 h-12 rounded-xl flex items-center justify-center bg-surface hover:bg-primary/20 hover:text-primary transition-all group"
+                                    title="Add Media"
+                                >
+                                    <span className="text-2xl group-hover:scale-110 transition-transform">📷</span>
+                                </button>
+                                <button
+                                    type="button"
+                                    className="w-12 h-12 rounded-xl flex items-center justify-center bg-surface hover:bg-secondary/20 hover:text-secondary transition-all group"
+                                    title="Add Location"
+                                >
+                                    <span className="text-2xl group-hover:scale-110 transition-transform">📍</span>
+                                </button>
+                            </div>
+
+                            <div className="flex gap-3">
+                                <button
+                                    type="button"
+                                    onClick={onClose}
+                                    className="btn-secondary"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={isLoading || (!content.trim() && mediaFiles.length === 0)}
+                                    className="btn-primary shadow-glow hover:shadow-glow-strong disabled:opacity-50 disabled:hover:shadow-none disabled:transform-none px-8"
+                                >
+                                    {isLoading ? (
+                                        <span className="flex items-center gap-2">
+                                            <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                            Posting...
+                                        </span>
+                                    ) : (
+                                        <span>Post 🚀</span>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
