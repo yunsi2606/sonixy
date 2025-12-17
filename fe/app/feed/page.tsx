@@ -1,58 +1,52 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PostCard } from '@/components/feed/PostCard';
 import { CreatePostModal } from '@/components/feed/CreatePostModal';
+import { postService } from '@/services/post.service';
 import type { Post } from '@/types/api';
-
-// Mock Data with specific intents
-const MOCK_POSTS: (Post & { variant?: 'default' | 'hero' | 'compact' })[] = [
-    {
-        id: 'hero-1',
-        authorId: 'admin',
-        content: "Welcome to the new Sonixy Design System.\n\nExperience depth, subtle motion, and true glassmorphism.",
-        likeCount: 1204,
-        createdAt: new Date().toISOString(),
-        visibility: 'public',
-        updatedAt: new Date().toISOString(),
-        variant: 'hero'
-    },
-    {
-        id: '1',
-        authorId: 'u1',
-        content: "Just trying out the new layout! The sidebar navigation is so much smoother on desktop. 🚀",
-        likeCount: 42,
-        createdAt: new Date(Date.now() - 3600000).toISOString(),
-        visibility: 'public',
-        updatedAt: new Date().toISOString(),
-    },
-    {
-        id: '2',
-        authorId: 'u2',
-        content: "Design tip: Use 'backdrop-filter: blur(20px)' sparingly. Too much blur kills performance on mobile browsers.",
-        likeCount: 89,
-        createdAt: new Date(Date.now() - 7200000).toISOString(),
-        visibility: 'public',
-        updatedAt: new Date().toISOString(),
-    },
-    {
-        id: '3',
-        authorId: 'u3',
-        content: "Anyone know how to center a div in 2025? Asking for a friend.",
-        likeCount: 15,
-        createdAt: new Date(Date.now() - 172800000).toISOString(),
-        visibility: 'public',
-        updatedAt: new Date().toISOString(),
-        variant: 'compact'
-    }
-];
 
 export default function FeedPage() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [posts, setPosts] = useState(MOCK_POSTS);
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
-    const handleLike = (id: string) => {
-        setPosts(prev => prev.map(p => p.id === id ? { ...p, likeCount: p.likeCount + 1 } : p));
+    const fetchFeed = async () => {
+        try {
+            const data = await postService.getFeed();
+            setPosts(data.items);
+        } catch (error) {
+            console.error('Failed to load feed', error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchFeed();
+    }, []);
+
+    const handleLike = async (id: string) => {
+        // Optimistic update
+        setPosts(prev => prev.map(p => {
+            if (p.id === id) {
+                const newIsLiked = !p.isLiked;
+                return {
+                    ...p,
+                    isLiked: newIsLiked,
+                    likeCount: newIsLiked ? p.likeCount + 1 : Math.max(0, p.likeCount - 1)
+                };
+            }
+            return p;
+        }));
+
+        try {
+            await postService.toggleLike(id);
+        } catch (error) {
+            // Revert on failure
+            console.error('Like failed', error);
+            fetchFeed();
+        }
     };
 
     return (
@@ -78,28 +72,29 @@ export default function FeedPage() {
 
             {/* Feed List */}
             <div className="flex flex-col">
-                {posts.map(post => (
-                    <PostCard
-                        key={post.id}
-                        post={post}
-                        variant={post.variant}
-                        onLike={handleLike}
-                    />
-                ))}
-
-                {/* Loading */}
-                <div className="flex justify-center py-12">
-                    <div className="flex items-center gap-2 text-[var(--color-text-muted)] animate-pulse">
-                        <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
-                        <span className="w-2 h-2 rounded-full bg-[var(--color-secondary)] delay-75" />
-                        <span className="w-2 h-2 rounded-full bg-[var(--color-primary)] delay-150" />
+                {isLoading ? (
+                    <div className="flex justify-center py-12">
+                        <div className="flex items-center gap-2 text-[var(--color-text-muted)] animate-pulse">
+                            <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
+                            <span className="w-2 h-2 rounded-full bg-[var(--color-secondary)] delay-75" />
+                            <span className="w-2 h-2 rounded-full bg-[var(--color-primary)] delay-150" />
+                        </div>
                     </div>
-                </div>
+                ) : (
+                    posts.map(post => (
+                        <PostCard
+                            key={post.id}
+                            post={post}
+                            onLike={handleLike}
+                        />
+                    ))
+                )}
             </div>
 
             <CreatePostModal
                 isOpen={isCreateModalOpen}
                 onClose={() => setIsCreateModalOpen(false)}
+                onSuccess={fetchFeed}
             />
         </div>
     );

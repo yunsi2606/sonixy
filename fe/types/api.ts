@@ -32,6 +32,7 @@ export interface Post {
     visibility: 'public' | 'followers';
     likeCount: number;
     isLiked?: boolean;
+    media?: { type: 'image' | 'video', url: string }[];
     createdAt: string;
     updatedAt: string;
 }

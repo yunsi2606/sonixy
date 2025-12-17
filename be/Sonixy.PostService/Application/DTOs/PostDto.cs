@@ -7,6 +7,9 @@ public record PostDto(
     string Visibility,
     int LikeCount,
     bool IsLiked,
+    List<MediaItemDto> Media,
     DateTime CreatedAt,
     DateTime UpdatedAt
 );
+
+public record MediaItemDto(string Type, string Url);

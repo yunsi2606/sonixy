@@ -21,7 +21,7 @@ public class PostsController(IPostService postService) : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(PostDto), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreatePost([FromBody] CreatePostDto dto)
+    public async Task<IActionResult> CreatePost([FromForm] CreatePostWithMediaDto dto)
     {
         var post = await postService.CreatePostAsync(dto, TestUserId);
         return CreatedAtAction(nameof(GetPost), new { id = post.Id }, post);

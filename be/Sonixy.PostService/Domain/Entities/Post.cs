@@ -10,4 +10,7 @@ public class Post : Entity
     public string Visibility { get; set; } = "public"; // "public" | "followers"
     public int LikeCount { get; set; } // Denormalized for performance
     public List<ObjectId> LikedBy { get; set; } = [];
+    public List<MediaItem> Media { get; set; } = [];
 }
+
+public record MediaItem(string Type, string Url); // Type: "image" | "video"

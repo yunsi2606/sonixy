@@ -86,6 +86,8 @@ services:
       - ASPNETCORE_URLS=http://+:8090
       - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
       - MongoDB__DatabaseName=sonixy_posts
+    volumes:
+      - ./uploads:/app/wwwroot/uploads
     depends_on:
       mongodb:
         condition: service_healthy

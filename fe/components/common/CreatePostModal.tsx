@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { postService, type CreatePostDto } from '@/services/post.service';
+import { postService } from '@/services/post.service';
 
 interface CreatePostModalProps {
     isOpen: boolean;
@@ -30,7 +30,7 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }: CreatePostMo
         setError('');
 
         try {
-            await postService.createPost({ content, visibility });
+            await postService.createPost(content, visibility);
             setContent('');
             onPostCreated?.();
             onClose();
@@ -104,8 +104,8 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }: CreatePostMo
                                 type="button"
                                 onClick={() => setVisibility('public')}
                                 className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${visibility === 'public'
-                                        ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-glow'
-                                        : 'bg-surface text-text-secondary hover:bg-surface-hover'
+                                    ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-glow'
+                                    : 'bg-surface text-text-secondary hover:bg-surface-hover'
                                     }`}
                             >
                                 <span className="mr-2">🌍</span>
@@ -115,8 +115,8 @@ export function CreatePostModal({ isOpen, onClose, onPostCreated }: CreatePostMo
                                 type="button"
                                 onClick={() => setVisibility('followers')}
                                 className={`flex-1 px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${visibility === 'followers'
-                                        ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-glow'
-                                        : 'bg-surface text-text-secondary hover:bg-surface-hover'
+                                    ? 'bg-gradient-to-r from-primary to-secondary text-white shadow-glow'
+                                    : 'bg-surface text-text-secondary hover:bg-surface-hover'
                                     }`}
                             >
                                 <span className="mr-2">👥</span>

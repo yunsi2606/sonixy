@@ -95,6 +95,30 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
                 <p className={textClasses[variant]}>
                     {post.content}
                 </p>
+
+                {/* Media Grid */}
+                {post.media && post.media.length > 0 && (
+                    <div className={`mt-4 grid gap-2 rounded-xl overflow-hidden ${post.media.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
+                        }`}>
+                        {post.media.map((item, idx) => (
+                            <div key={idx} className="relative bg-black/20 aspect-video">
+                                {item.type === 'video' ? (
+                                    <video
+                                        src={item.url}
+                                        controls
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <img
+                                        src={item.url}
+                                        alt="Post media"
+                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                                    />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* Actions */}

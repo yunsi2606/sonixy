@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Hosting;
 using MongoDB.Bson;
 using Sonixy.PostService.Application.DTOs;
 using Sonixy.PostService.Domain.Entities;
@@ -6,12 +7,40 @@ using Sonixy.Shared.Pagination;
 
 namespace Sonixy.PostService.Application.Services;
 
-public class PostService(IPostRepository postRepository) : IPostService
+public class PostService(IPostRepository postRepository, IWebHostEnvironment environment) : IPostService
 {
-    public async Task<PostDto> CreatePostAsync(CreatePostDto dto, string authorId, CancellationToken cancellationToken = default)
+    public async Task<PostDto> CreatePostAsync(CreatePostWithMediaDto dto, string authorId, CancellationToken cancellationToken = default)
     {
         if (!ObjectId.TryParse(authorId, out var authorObjectId))
             throw new ArgumentException("Invalid author ID");
+
+        var mediaItems = new List<MediaItem>();
+
+        // Handle Media Uploads
+        if (dto.Media != null && dto.Media.Count > 0)
+        {
+            var uploadsFolder = Path.Combine(environment.WebRootPath, "uploads");
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            foreach (var file in dto.Media)
+            {
+                 if (file.Length > 0)
+                 {
+                     var fileName = $"{Guid.NewGuid()}{Path.GetExtension(file.FileName)}";
+                     var filePath = Path.Combine(uploadsFolder, fileName);
+                     
+                     using (var stream = new FileStream(filePath, FileMode.Create))
+                     {
+                         await file.CopyToAsync(stream, cancellationToken);
+                     }
+
+                     var type = file.ContentType.StartsWith("video") ? "video" : "image";
+                     // Assuming API Gateway or Static File Middleware serves from /uploads
+                     var url = $"/uploads/{fileName}"; 
+                     mediaItems.Add(new MediaItem(type, url));
+                 }
+            }
+        }
 
         var post = new Post
         {
@@ -19,7 +48,8 @@ public class PostService(IPostRepository postRepository) : IPostService
             Content = dto.Content,
             Visibility = dto.Visibility,
             LikeCount = 0,
-            LikedBy = []
+            LikedBy = [],
+            Media = mediaItems
         };
 
         await postRepository.AddAsync(post, cancellationToken);
@@ -85,7 +115,6 @@ public class PostService(IPostRepository postRepository) : IPostService
         var post = await postRepository.GetByIdAsync(postObjectId, cancellationToken);
         if (post is null) return false;
 
-        // Ensure LikedBy is initialized (prevent potential nulls if DB has old docs)
         post.LikedBy ??= [];
 
         if (post.LikedBy.Contains(userObjectId))
@@ -111,6 +140,8 @@ public class PostService(IPostRepository postRepository) : IPostService
             isLiked = post.LikedBy?.Contains(userObjectId) ?? false;
         }
 
+        var mediaDtos = post.Media?.Select(m => new MediaItemDto(m.Type, m.Url)).ToList() ?? [];
+
         return new PostDto(
             post.Id.ToString(),
             post.AuthorId.ToString(),
@@ -118,6 +149,7 @@ public class PostService(IPostRepository postRepository) : IPostService
             post.Visibility,
             post.LikeCount,
             isLiked,
+            mediaDtos,
             post.CreatedAt,
             post.UpdatedAt
         );
