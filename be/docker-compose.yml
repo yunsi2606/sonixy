@@ -150,7 +150,7 @@ services:
       - minio_data:/data
     ports:
       - "9100:9000" # API for Host
-      - "9101:9001" # Console for Host
+      - "9102:9002" # Console for Host
     environment:
       MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-SonixyMinio123!}
