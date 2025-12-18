@@ -5,7 +5,8 @@ import type { User } from '@/types/api';
 const USER_BASE = '/api/users';
 
 export interface UpdateUserDto {
-    displayName?: string;
+    firstName?: string;
+    lastName?: string;
     bio?: string;
     avatarUrl?: string;
 }
@@ -17,11 +18,7 @@ export const userService = {
     },
 
     async getCurrentUser(): Promise<User> {
-        const userId = authService.getUserId();
-        if (!userId) throw new Error('Not authenticated');
-
-        const token = authService.getAccessToken();
-        return apiClient.get<User>(`${USER_BASE}/${userId}`, token || undefined);
+        return apiClient.get<User>(`${USER_BASE}/me`);
     },
 
     async updateUser(id: string, data: UpdateUserDto): Promise<User> {

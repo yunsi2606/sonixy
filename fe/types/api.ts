@@ -8,7 +8,6 @@ export interface AuthResponse {
 export interface RegisterDto {
     email: string;
     password: string;
-    displayName: string;
 }
 
 export interface LoginDto {
@@ -18,6 +17,8 @@ export interface LoginDto {
 
 export interface User {
     id: string;
+    firstName?: string;
+    lastName?: string;
     displayName: string;
     email: string;
     bio: string;

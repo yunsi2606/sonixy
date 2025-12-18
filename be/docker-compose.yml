@@ -68,6 +68,9 @@ services:
       - CORS__AllowOrigins=https://sonixy.nhatcuong.io.vn
       - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
       - MongoDB__DatabaseName=sonixy_users
+      - Jwt__SecretKey=${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast32CharactersLongForHS256}
+      - Jwt__Issuer=Sonixy.IdentityService
+      - Jwt__Audience=Sonixy.Client
     depends_on:
       mongodb:
         condition: service_healthy
@@ -93,6 +96,9 @@ services:
       - Minio__AccessKey=${MINIO_ROOT_USER:-admin}
       - Minio__SecretKey=${MINIO_ROOT_PASSWORD:-SonixyMinio123!}
       - Minio__PublicUrl=https://media-sonixy.nhatcuong.io.vn
+      - Jwt__SecretKey=${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast32CharactersLongForHS256}
+      - Jwt__Issuer=Sonixy.IdentityService
+      - Jwt__Audience=Sonixy.Client
     volumes:
       - ./uploads:/app/wwwroot/uploads
     depends_on:
@@ -116,6 +122,9 @@ services:
       - CORS__AllowOrigins=https://sonixy.nhatcuong.io.vn
       - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
       - MongoDB__DatabaseName=sonixy_social
+      - Jwt__SecretKey=${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast32CharactersLongForHS256}
+      - Jwt__Issuer=Sonixy.IdentityService
+      - Jwt__Audience=Sonixy.Client
     depends_on:
       mongodb:
         condition: service_healthy

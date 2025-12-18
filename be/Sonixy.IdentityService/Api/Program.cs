@@ -70,6 +70,10 @@ builder.Services.AddControllers();
 
 // gRPC
 builder.Services.AddGrpc();
+builder.Services.AddGrpcClient<Sonixy.Shared.Protos.UserService.UserServiceClient>(o => 
+{
+    o.Address = new Uri("http://user-service:8089");
+});
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();

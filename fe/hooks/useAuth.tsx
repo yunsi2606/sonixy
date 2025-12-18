@@ -1,43 +1,80 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import { authService } from '@/services/auth.service';
-import type { AuthResponse, RegisterDto, LoginDto } from '@/types/api';
+import { userService } from '@/services/user.service';
+import type { AuthResponse, RegisterDto, LoginDto, User } from '@/types/api';
 
 interface AuthContextType {
+    user: User | null;
     userId: string | null;
     isAuthenticated: boolean;
     isLoading: boolean;
     login: (data: LoginDto) => Promise<void>;
     register: (data: RegisterDto) => Promise<void>;
     logout: () => Promise<void>;
+    checkAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+    const [user, setUser] = useState<User | null>(null);
     const [userId, setUserId] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const router = useRouter();
+    const pathname = usePathname();
 
-    useEffect(() => {
-        // Check for existing auth on mount
+    const fetchUser = async () => {
+        try {
+            const userData = await userService.getCurrentUser();
+            setUser(userData);
+            return userData;
+        } catch (error) {
+            console.error('Failed to fetch user:', error);
+            // If fetching user fails but we have token, maybe token expired or user deleted?
+            // Optionally logout or just leave user null
+            return null;
+        }
+    };
+
+    const checkAuth = async () => {
         const storedUserId = authService.getUserId();
         if (storedUserId) {
             setUserId(storedUserId);
+            await fetchUser();
         }
         setIsLoading(false);
+    };
+
+    useEffect(() => {
+        checkAuth();
     }, []);
+
+    useEffect(() => {
+        if (!isLoading && user) {
+            // Check if user needs onboarding
+            const isNameMissing = !user.firstName || !user.lastName;
+            // Avoid redirect loop
+            if (isNameMissing && pathname !== '/onboarding' && pathname !== '/login' && pathname !== '/register') {
+                router.push('/onboarding');
+            }
+        }
+    }, [user, isLoading, pathname, router]);
 
     const login = async (data: LoginDto) => {
         const response = await authService.login(data);
         authService.saveTokens(response);
         setUserId(response.userId);
+        await fetchUser();
     };
 
     const register = async (data: RegisterDto) => {
         const response = await authService.register(data);
         authService.saveTokens(response);
         setUserId(response.userId);
+        await fetchUser();
     };
 
     const logout = async () => {
@@ -51,17 +88,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         authService.clearTokens();
         setUserId(null);
+        setUser(null);
+        router.push('/login');
     };
 
     return (
         <AuthContext.Provider
             value={{
+                user,
                 userId,
                 isAuthenticated: !!userId,
                 isLoading,
                 login,
                 register,
                 logout,
+                checkAuth
             }
             }
         >

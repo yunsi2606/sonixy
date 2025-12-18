@@ -19,11 +19,17 @@ public class UserService(IUserRepository userRepository) : IUserService
 
         var user = new User
         {
-            DisplayName = dto.DisplayName,
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
             Email = dto.Email.ToLowerInvariant(),
             Bio = dto.Bio ?? string.Empty,
             AvatarUrl = dto.AvatarUrl ?? string.Empty
         };
+
+        if (!string.IsNullOrEmpty(dto.Id) && ObjectId.TryParse(dto.Id, out var objectId))
+        {
+            user.Id = objectId;
+        }
 
         await userRepository.AddAsync(user, cancellationToken);
 
@@ -54,8 +60,11 @@ public class UserService(IUserRepository userRepository) : IUserService
         if (user is null)
             throw new KeyNotFoundException("User not found");
 
-        if (dto.DisplayName is not null)
-            user.DisplayName = dto.DisplayName;
+        if (dto.FirstName is not null)
+            user.FirstName = dto.FirstName;
+
+        if (dto.LastName is not null)
+            user.LastName = dto.LastName;
 
         if (dto.Bio is not null)
             user.Bio = dto.Bio;
@@ -86,6 +95,8 @@ public class UserService(IUserRepository userRepository) : IUserService
 
     private static UserDto MapToDto(User user) => new(
         user.Id.ToString(),
+        user.FirstName,
+        user.LastName,
         user.DisplayName,
         user.Email,
         user.Bio,

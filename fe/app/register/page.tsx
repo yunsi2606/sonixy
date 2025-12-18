@@ -10,7 +10,7 @@ export default function RegisterPage() {
     const { register } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [displayName, setDisplayName] = useState('');
+
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
@@ -26,7 +26,7 @@ export default function RegisterPage() {
         setIsLoading(true);
 
         try {
-            await register({ email, password, displayName });
+            await register({ email, password });
             router.push('/feed');
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Registration failed');
@@ -50,20 +50,7 @@ export default function RegisterPage() {
                     className="glass p-8 rounded-2xl space-y-6 animate-fade-in"
                     style={{ animationDelay: '0.1s' }}
                 >
-                    <div>
-                        <label htmlFor="displayName" className="block text-sm font-medium mb-2">
-                            Display Name
-                        </label>
-                        <input
-                            id="displayName"
-                            type="text"
-                            value={displayName}
-                            onChange={(e) => setDisplayName(e.target.value)}
-                            required
-                            className="w-full px-4 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-border-focus)] transition-colors"
-                            placeholder="John Doe"
-                        />
-                    </div>
+
 
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium mb-2">

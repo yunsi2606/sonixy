@@ -45,8 +45,8 @@ export function RightSidebar() {
                         imgGradient="from-blue-500 to-cyan-500"
                     />
                     <SuggestedUser
-                        name="John Doe"
-                        handle="@johndoe"
+                        name="Nhat Cuong"
+                        handle="@nhatcuong"
                         imgGradient="from-purple-500 to-indigo-500"
                     />
                 </div>

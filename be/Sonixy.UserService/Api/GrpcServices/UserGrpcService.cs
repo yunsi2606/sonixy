@@ -26,7 +26,9 @@ public class UserGrpcService(IUserService userService) : Shared.Protos.UserServi
             Email = user.Email,
             Bio = user.Bio,
             AvatarUrl = user.AvatarUrl,
-            CreatedAt = user.CreatedAt.ToString(CultureInfo.CurrentCulture)
+            CreatedAt = user.CreatedAt.ToString(CultureInfo.CurrentCulture),
+            FirstName = user.FirstName ?? "",
+            LastName = user.LastName ?? ""
         };
     }
 
@@ -48,7 +50,9 @@ public class UserGrpcService(IUserService userService) : Shared.Protos.UserServi
                 DisplayName = user.DisplayName,
                 Email = user.Email,
                 Bio = user.Bio,
-                AvatarUrl = user.AvatarUrl
+                AvatarUrl = user.AvatarUrl,
+                FirstName = user.FirstName ?? "",
+                LastName = user.LastName ?? ""
             });
         }
 
@@ -64,6 +68,33 @@ public class UserGrpcService(IUserService userService) : Shared.Protos.UserServi
         return new UserExistsResponse
         {
             Exists = user is not null
+        };
+    }
+    
+    public override async Task<UserDto> CreateUser(
+        CreateUserRequest request,
+        ServerCallContext context)
+    {
+        var dto = new Application.DTOs.CreateUserDto(
+            request.FirstName,
+            request.LastName,
+            request.Email,
+            null,
+            null,
+            request.Id
+        );
+
+        var user = await userService.CreateUserAsync(dto, context.CancellationToken);
+
+        return new UserDto
+        {
+            Id = user.Id,
+            DisplayName = user.DisplayName,
+            Email = user.Email,
+            Bio = user.Bio ?? "",
+            AvatarUrl = user.AvatarUrl ?? "",
+            FirstName = user.FirstName ?? "",
+            LastName = user.LastName ?? ""
         };
     }
 }

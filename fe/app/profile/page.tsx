@@ -14,7 +14,7 @@ export default function ProfilePage() {
     const { isAuthenticated, userId, logout } = useAuth();
     const [user, setUser] = useState<User | null>(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [editForm, setEditForm] = useState({ displayName: '', bio: '' });
+    const [editForm, setEditForm] = useState({ firstName: '', lastName: '', bio: '' });
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
@@ -40,7 +40,8 @@ export default function ProfilePage() {
             const userData = await userService.getCurrentUser();
             setUser(userData);
             setEditForm({
-                displayName: userData.displayName,
+                firstName: userData.firstName || '',
+                lastName: userData.lastName || '',
                 bio: userData.bio,
             });
         } catch (error) {
@@ -110,13 +111,22 @@ export default function ProfilePage() {
                         <div className="flex-1">
                             {isEditing ? (
                                 <div className="space-y-4">
-                                    <input
-                                        type="text"
-                                        value={editForm.displayName}
-                                        onChange={(e) => setEditForm({ ...editForm, displayName: e.target.value })}
-                                        className="w-full px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-border-focus)]"
-                                        placeholder="Display Name"
-                                    />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <input
+                                            type="text"
+                                            value={editForm.firstName}
+                                            onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
+                                            className="w-full px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-border-focus)]"
+                                            placeholder="First Name"
+                                        />
+                                        <input
+                                            type="text"
+                                            value={editForm.lastName}
+                                            onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
+                                            className="w-full px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-border-focus)]"
+                                            placeholder="Last Name"
+                                        />
+                                    </div>
                                     <textarea
                                         value={editForm.bio}
                                         onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
@@ -135,7 +145,11 @@ export default function ProfilePage() {
                                         <button
                                             onClick={() => {
                                                 setIsEditing(false);
-                                                setEditForm({ displayName: user.displayName, bio: user.bio });
+                                                setEditForm({
+                                                    firstName: user.firstName || '',
+                                                    lastName: user.lastName || '',
+                                                    bio: user.bio
+                                                });
                                             }}
                                             className="px-6 py-2 bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] rounded-xl font-medium transition-all"
                                         >

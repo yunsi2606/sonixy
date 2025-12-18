@@ -11,6 +11,7 @@ public class AuthService(
     IRefreshTokenRepository refreshTokenRepository,
     IPasswordHasher passwordHasher,
     ITokenService tokenService,
+    Sonixy.Shared.Protos.UserService.UserServiceClient userServiceClient,
     IOptions<JwtSettings> jwtSettings) : IAuthService
 {
     private readonly JwtSettings _jwtSettings = jwtSettings.Value;
@@ -33,6 +34,22 @@ public class AuthService(
         };
 
         await accountRepository.AddAsync(account, cancellationToken);
+        
+        // Sync with User Service
+        try 
+        {
+            await userServiceClient.CreateUserAsync(new Shared.Protos.CreateUserRequest
+            {
+                Id = account.Id.ToString(),
+                Email = dto.Email,
+                FirstName = "",
+                LastName = ""
+            }, cancellationToken: cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Account created but failed to create user profile: {ex.Message}", ex);
+        }
 
         // Generate tokens
         return await GenerateAuthResponseAsync(account, cancellationToken);
