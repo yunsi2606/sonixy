@@ -23,7 +23,7 @@ public class PostsController(IPostService postService) : ControllerBase
     public async Task<IActionResult> GeneratePresignedUrl([FromBody] PresignedUrlRequestDto request)
     {
         var (uploadUrl, objectKey, publicUrl) = await postService.GeneratePresignedUrlAsync(request.FileName, request.ContentType);
-        return Ok(new PresignedUrlResponseDto(uploadUrl, objectKey, publicUrl));
+        return Ok(new PresignedUrlResponseDto(uploadUrl, objectKey));
     }
 
     /// <summary>

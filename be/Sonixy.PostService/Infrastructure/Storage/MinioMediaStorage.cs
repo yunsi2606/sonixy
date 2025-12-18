@@ -18,13 +18,17 @@ public class MinioMediaStorage(IMinioClient minioClient, IOptions<MinioOptions> 
         // Key Strategy: posts/{yyyy}/{MM}/{uuid}.{ext}
         var objectKey = $"posts/{now.Year}/{now.Month:D2}/{uuid}{ext}";
 
-        // Ensure bucket exists (best effort, ideally check at startup)
+        // Ensure bucket exists
         var bucketExistsArgs = new BucketExistsArgs().WithBucket(_options.Bucket);
         if (!await minioClient.BucketExistsAsync(bucketExistsArgs, cancellationToken))
         {
             await minioClient.MakeBucketAsync(new MakeBucketArgs().WithBucket(_options.Bucket), cancellationToken);
-            
-            // Set Policy to Public Read
+        }
+
+        // Always check and set policy to Public Read to ensure images are accessible
+        // This fixes the "missing key" (Access Denied) issue if the bucket existed but lost policy
+        try 
+        {
             var policy = $@"{{
                 ""Version"": ""2012-10-17"",
                 ""Statement"": [
@@ -38,6 +42,10 @@ public class MinioMediaStorage(IMinioClient minioClient, IOptions<MinioOptions> 
             }}";
             await minioClient.SetPolicyAsync(new SetPolicyArgs().WithBucket(_options.Bucket).WithPolicy(policy), cancellationToken);
         }
+        catch (Exception ex)
+        {
+           Console.WriteLine($"Warning: Failed to set bucket policy: {ex.Message}");
+        }
 
         // Keep presigned URL valid for 15 minutes
         var presignedArgs = new PresignedPutObjectArgs()
@@ -49,7 +57,36 @@ public class MinioMediaStorage(IMinioClient minioClient, IOptions<MinioOptions> 
                 { "Content-Type", contentType } 
             });
 
-        var uploadUrl = await minioClient.PresignedPutObjectAsync(presignedArgs);
+        string uploadUrl;
+        
+        // Fix: Use a client configured with the Public URL for signing
+        // This ensures the signature matches the Host header the browser will send (media-sonixy...)
+        if (!string.IsNullOrEmpty(_options.PublicUrl))
+        {
+             try
+             {
+                var publicUri = new Uri(_options.PublicUrl);
+                var isSecure = publicUri.Scheme == "https";
+                
+                // Construct a temporary client for signing
+                var signingClient = new MinioClient()
+                    .WithEndpoint(publicUri.Host, publicUri.Port > 0 ? publicUri.Port : (isSecure ? 443 : 80))
+                    .WithCredentials(_options.AccessKey, _options.SecretKey)
+                    .WithSSL(isSecure)
+                    .Build();
+
+                uploadUrl = await signingClient.PresignedPutObjectAsync(presignedArgs);
+             }
+             catch
+             {
+                 // Fallback to internal client if parsing fails
+                 uploadUrl = await minioClient.PresignedPutObjectAsync(presignedArgs);
+             }
+        }
+        else
+        {
+            uploadUrl = await minioClient.PresignedPutObjectAsync(presignedArgs);
+        }
 
         // Generate Public URL for viewing
         // If PublicUrl is configured (e.g. CDN or specific host), use it. Otherwise use the endpoint/bucket/key

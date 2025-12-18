@@ -32,10 +32,7 @@ public class PostService(
         {
             foreach (var item in dto.Media)
             {
-                var host = !string.IsNullOrEmpty(_minioOptions.PublicUrl) ? _minioOptions.PublicUrl : $"{(_minioOptions.UseSSL ? "https" : "http")}://{_minioOptions.Endpoint}";
-                var fullUrl = $"{host}/{_minioOptions.Bucket}/{item.ObjectKey}";
-                
-                mediaItems.Add(new MediaItem(item.Type, fullUrl)); 
+               mediaItems.Add(new MediaItem(item.Type, item.ObjectKey)); 
             }
         }
 
@@ -129,7 +126,7 @@ public class PostService(
         return true;
     }
 
-    private static PostDto MapToDto(Post post, string? currentUserId)
+    private PostDto MapToDto(Post post, string? currentUserId)
     {
         var isLiked = false;
         if (!string.IsNullOrEmpty(currentUserId) && ObjectId.TryParse(currentUserId, out var userObjectId))
@@ -137,7 +134,12 @@ public class PostService(
             isLiked = post.LikedBy?.Contains(userObjectId) ?? false;
         }
 
-        var mediaDtos = post.Media?.Select(m => new MediaItemDto(m.Type, m.Url)).ToList() ?? [];
+        var mediaDtos = post.Media.Select(m =>
+            new MediaItemDto(
+                m.Type,
+                $"{_minioOptions.PublicUrl}/{_minioOptions.Bucket}/{m.ObjectKey}"
+            )
+        ).ToList();
 
         return new PostDto(
             post.Id.ToString(),

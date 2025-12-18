@@ -13,4 +13,4 @@ public class Post : Entity
     public List<MediaItem> Media { get; set; } = [];
 }
 
-public record MediaItem(string Type, string Url); // Type: "image" | "video"
+public record MediaItem(string Type, string ObjectKey); // Type: "image" | "video"

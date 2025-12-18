@@ -1,5 +1,6 @@
 import type { Post } from '@/types/api';
-import React from 'react';
+import React, { useState } from 'react';
+import { Lightbox } from '../common/Lightbox';
 
 interface PostCardProps {
     post: Post;
@@ -13,6 +14,14 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
     // In real app, consider using date-fns formatDistanceToNow
     const date = new Date(post.createdAt);
     const timeDisplay = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+    const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
+
+    const openLightbox = (index: number) => {
+        setLightboxIndex(index);
+        setIsLightboxOpen(true);
+    };
 
     // --- Variant Styles ---
     const containerClasses = {
@@ -98,23 +107,35 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
 
                 {/* Media Grid */}
                 {post.media && post.media.length > 0 && (
-                    <div className={`mt-4 grid gap-2 rounded-xl overflow-hidden ${post.media.length === 1 ? 'grid-cols-1' : 'grid-cols-2'
+                    <div className={`mt-4 grid gap-2 rounded-xl overflow-hidden ${post.media.length !== 1 ? 'grid-cols-2' : 'grid-cols-1'
                         }`}>
                         {post.media.map((item, idx) => (
-                            <div key={idx} className="relative bg-black/20 aspect-video">
+                            <div
+                                key={idx}
+                                className={`relative bg-black/5 overflow-hidden group/media cursor-pointer ${post.media?.length !== 1 ? 'aspect-square' : 'max-h-[600px]'}`}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    openLightbox(idx);
+                                }}
+                            >
                                 {item.type === 'video' ? (
                                     <video
                                         src={item.url}
-                                        controls
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
                                     <img
                                         src={item.url}
                                         alt="Post media"
-                                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                                        className={`w-full h-full ${post.media?.length !== 1 ? 'object-cover' : 'object-contain bg-black/40 backdrop-blur-md'} hover:scale-105 transition-transform duration-500`}
                                     />
                                 )}
+                                {/* Zoom Icon Overlay */}
+                                <div className="absolute inset-0 bg-black/0 group-hover/media:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover/media:opacity-100">
+                                    <span className="bg-black/50 text-white p-2 rounded-full backdrop-blur-sm">
+                                        🔍
+                                    </span>
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -133,6 +154,16 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
                 <ActionButton icon="💬" count="Comment" onClick={() => onComment?.(post.id)} activeColor="text-[var(--color-primary)]" />
                 <ActionButton icon="📤" count="Share" activeColor="text-[var(--color-secondary)]" className="ml-auto" />
             </div>
+
+            {/* Lightbox for viewing media */}
+            {post.media && post.media.length > 0 && (
+                <Lightbox
+                    isOpen={isLightboxOpen}
+                    onClose={() => setIsLightboxOpen(false)}
+                    images={post.media.map(m => ({ type: m.type, url: m.url }))}
+                    initialIndex={lightboxIndex}
+                />
+            )}
         </article>
     );
 }
