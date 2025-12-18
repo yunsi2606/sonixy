@@ -160,7 +160,7 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
                 <Lightbox
                     isOpen={isLightboxOpen}
                     onClose={() => setIsLightboxOpen(false)}
-                    images={post.media.map(m => ({ type: m.type, url: m.url }))}
+                    post={post}
                     initialIndex={lightboxIndex}
                 />
             )}
