@@ -62,9 +62,10 @@ services:
     restart: always
     ports:
       - "5009:8089"
+      - "5109:8189"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8089
+      - ASPNETCORE_URLS=http://+:8089;http://+:8189
       - CORS__AllowOrigins=https://sonixy.nhatcuong.io.vn
       - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
       - MongoDB__DatabaseName=sonixy_users

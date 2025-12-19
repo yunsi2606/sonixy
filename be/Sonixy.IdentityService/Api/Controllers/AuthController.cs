@@ -24,7 +24,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     ///     {
     ///       "email": "user@example.com",
     ///       "password": "SecurePass123!",
-    ///       "displayName": "John Doe"
+    ///       "displayName": "Nhat Cuong"
     ///     }
     /// 
     /// </remarks>

@@ -11,7 +11,25 @@ using Sonixy.UserService.Application.Services;
 using Sonixy.UserService.Domain.Repositories;
 using Sonixy.UserService.Infrastructure.Repositories;
 
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Kestrel for gRPC (HTTP/2) and REST (HTTP/1.1)
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // REST API - HTTP/1.1
+    options.ListenAnyIP(8089, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http1;
+    });
+
+    // gRPC - HTTP/2
+    options.ListenAnyIP(8189, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http2;
+    });
+});
 
 // MongoDB Configuration
 builder.Services.Configure<MongoDbSettings>(
