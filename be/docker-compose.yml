@@ -72,6 +72,11 @@ services:
       - Jwt__SecretKey=${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast32CharactersLongForHS256}
       - Jwt__Issuer=Sonixy.IdentityService
       - Jwt__Audience=Sonixy.Client
+      - Minio__Endpoint=minio:9000
+      - Minio__AccessKey=${MINIO_ROOT_USER:-admin}
+      - Minio__SecretKey=${MINIO_ROOT_PASSWORD:-SonixyMinio123!}
+      - Minio__Bucket=sonixy-users
+      - Minio__PublicUrl=https://media-sonixy.nhatcuong.io.vn
     depends_on:
       mongodb:
         condition: service_healthy

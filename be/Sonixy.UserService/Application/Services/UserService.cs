@@ -3,12 +3,18 @@ using Sonixy.UserService.Application.DTOs;
 using Sonixy.UserService.Domain.Entities;
 using Sonixy.UserService.Domain.Repositories;
 using Sonixy.Shared.Specifications;
+using Sonixy.Shared.Interfaces;
 using MongoDB.Driver;
 
 namespace Sonixy.UserService.Application.Services;
 
-public class UserService(IUserRepository userRepository) : IUserService
+public class UserService(IUserRepository userRepository, IMediaStorage mediaStorage) : IUserService
 {
+    public async Task<(string UploadUrl, string ObjectKey, string PublicUrl)> GeneratePresignedUrlAsync(string fileName, string contentType, CancellationToken cancellationToken = default)
+    {
+        return await mediaStorage.GeneratePresignedUploadUrlAsync(fileName, contentType, cancellationToken);
+    }
+
     public async Task<UserDto> CreateUserAsync(CreateUserDto dto, CancellationToken cancellationToken = default)
     {
         // Check if email already exists

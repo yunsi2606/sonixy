@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using MongoDB.Driver;
 using Sonixy.Shared.Configuration;
+using Sonixy.Shared.Extensions;
 using Sonixy.UserService.Api.GrpcServices;
 using Sonixy.UserService.Application.Services;
 using Sonixy.UserService.Domain.Repositories;
@@ -53,6 +54,9 @@ builder.Services.AddScoped(sp =>
 // Repository & Service Registration
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserService, UserService>();
+
+// MinIO
+builder.Services.AddSharedMinio(builder.Configuration);
 
 // Controllers
 builder.Services.AddControllers();

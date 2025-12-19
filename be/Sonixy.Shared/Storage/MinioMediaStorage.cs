@@ -1,10 +1,10 @@
 using Microsoft.Extensions.Options;
 using Minio;
 using Minio.DataModel.Args;
-using Sonixy.PostService.Application.Interfaces;
 using Sonixy.Shared.Configuration;
+using Sonixy.Shared.Interfaces;
 
-namespace Sonixy.PostService.Infrastructure.Storage;
+namespace Sonixy.Shared.Infrastructure.Storage;
 
 public class MinioMediaStorage(IMinioClient minioClient, IOptions<MinioOptions> options) : IMediaStorage
 {
@@ -16,8 +16,9 @@ public class MinioMediaStorage(IMinioClient minioClient, IOptions<MinioOptions> 
         var uuid = Guid.NewGuid().ToString();
         var now = DateTime.UtcNow;
         
-        // Key Strategy: posts/{yyyy}/{MM}/{uuid}.{ext}
-        var objectKey = $"posts/{now.Year}/{now.Month:D2}/{uuid}{ext}";
+        // Key Strategy: {yyyy}/{MM}/{uuid}.{ext} - removed "posts/" prefix to be generic
+        // The bucket itself should define the context (e.g. sonixy-users, sonixy-posts)
+        var objectKey = $"{now.Year}/{now.Month:D2}/{uuid}{ext}";
 
         // Ensure bucket exists
         var bucketExistsArgs = new BucketExistsArgs().WithBucket(_options.Bucket);
@@ -26,8 +27,7 @@ public class MinioMediaStorage(IMinioClient minioClient, IOptions<MinioOptions> 
             await minioClient.MakeBucketAsync(new MakeBucketArgs().WithBucket(_options.Bucket), cancellationToken);
         }
 
-        // Always check and set policy to Public Read to ensure images are accessible
-        // This fixes the "missing key" (Access Denied) issue if the bucket existed but lost policy
+        // Always check and set policy to Public Read
         try 
         {
             var policy = $@"{{
@@ -60,8 +60,6 @@ public class MinioMediaStorage(IMinioClient minioClient, IOptions<MinioOptions> 
 
         string uploadUrl;
         
-        // Fix: Use a client configured with the Public URL for signing
-        // This ensures the signature matches the Host header the browser will send (media-sonixy...)
         if (!string.IsNullOrEmpty(_options.PublicUrl))
         {
              try
@@ -69,7 +67,6 @@ public class MinioMediaStorage(IMinioClient minioClient, IOptions<MinioOptions> 
                 var publicUri = new Uri(_options.PublicUrl);
                 var isSecure = publicUri.Scheme == "https";
                 
-                // Construct a temporary client for signing
                 var signingClient = new MinioClient()
                     .WithEndpoint(publicUri.Host, publicUri.Port > 0 ? publicUri.Port : (isSecure ? 443 : 80))
                     .WithCredentials(_options.AccessKey, _options.SecretKey)
@@ -80,7 +77,6 @@ public class MinioMediaStorage(IMinioClient minioClient, IOptions<MinioOptions> 
              }
              catch
              {
-                 // Fallback to internal client if parsing fails
                  uploadUrl = await minioClient.PresignedPutObjectAsync(presignedArgs);
              }
         }
@@ -89,11 +85,7 @@ public class MinioMediaStorage(IMinioClient minioClient, IOptions<MinioOptions> 
             uploadUrl = await minioClient.PresignedPutObjectAsync(presignedArgs);
         }
 
-        // Generate Public URL for viewing
-        // If PublicUrl is configured (e.g. CDN or specific host), use it. Otherwise use the endpoint/bucket/key
         var host = !string.IsNullOrEmpty(_options.PublicUrl) ? _options.PublicUrl : $"{(_options.UseSSL ? "https" : "http")}://{_options.Endpoint}";
-        
-        // MinIO default path access: http://host:9000/bucket/key
         var publicUrl = $"{host}/{_options.Bucket}/{objectKey}";
 
         return (uploadUrl, objectKey, publicUrl);

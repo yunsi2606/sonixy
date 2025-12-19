@@ -1,0 +1,4 @@
+namespace Sonixy.UserService.Application.DTOs;
+
+public record PresignedUrlRequestDto(string FileName, string ContentType);
+public record PresignedUrlResponseDto(string UploadUrl, string ObjectKey, string PublicUrl);

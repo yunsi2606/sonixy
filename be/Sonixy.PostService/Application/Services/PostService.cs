@@ -1,10 +1,10 @@
 using MongoDB.Bson;
-using Sonixy.PostService.Infrastructure.Storage;
 using Microsoft.Extensions.Options;
 using Sonixy.PostService.Application.DTOs;
 using Sonixy.PostService.Domain.Entities;
 using Sonixy.PostService.Domain.Repositories;
-using Sonixy.PostService.Application.Interfaces;
+using Sonixy.Shared.Interfaces;
+using Sonixy.Shared.Configuration;
 using Sonixy.Shared.Pagination;
 
 namespace Sonixy.PostService.Application.Services;

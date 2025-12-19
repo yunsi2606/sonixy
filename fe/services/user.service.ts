@@ -25,4 +25,21 @@ export const userService = {
         const token = authService.getAccessToken();
         return apiClient.patch<User>(`${USER_BASE}/${id}`, data, token || undefined);
     },
+
+    async uploadAvatar(file: File): Promise<string> {
+        const { uploadUrl, publicUrl } = await apiClient.post<{ uploadUrl: string, objectKey: string, publicUrl: string }>(
+            `${USER_BASE}/presigned-url`,
+            { fileName: file.name, contentType: file.type }
+        );
+
+        await fetch(uploadUrl, {
+            method: 'PUT',
+            body: file,
+            headers: {
+                'Content-Type': file.type
+            }
+        });
+
+        return publicUrl;
+    },
 };

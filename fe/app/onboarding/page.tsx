@@ -122,16 +122,46 @@ export default function OnboardingPage() {
 
                     <div>
                         <label htmlFor="avatarUrl" className="block text-sm font-medium mb-2">
-                            Avatar URL (Optional)
+                            Avatar
                         </label>
-                        <input
-                            id="avatarUrl"
-                            type="url"
-                            value={avatarUrl}
-                            onChange={(e) => setAvatarUrl(e.target.value)}
-                            className="w-full px-4 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-border-focus)] transition-colors"
-                            placeholder="https://example.com/avatar.jpg"
-                        />
+                        <div className="flex items-center space-x-4">
+                            <div className="relative w-20 h-20 rounded-full overflow-hidden bg-[var(--color-surface)] border border-[var(--color-border)]">
+                                {avatarUrl ? (
+                                    <img src={avatarUrl} alt="Avatar Preview" className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-[var(--color-text-tertiary)]">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="flex-1">
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) {
+                                            try {
+                                                setIsLoading(true);
+                                                const url = await userService.uploadAvatar(file);
+                                                setAvatarUrl(url);
+                                            } catch (err) {
+                                                setError('Failed to upload avatar');
+                                                console.error(err);
+                                            } finally {
+                                                setIsLoading(false);
+                                            }
+                                        }
+                                    }}
+                                    className="w-full px-4 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-border-focus)] transition-colors file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-[var(--color-primary)] file:text-white hover:file:bg-[var(--color-primary-hover)] cursor-pointer"
+                                />
+                                <p className="text-xs text-[var(--color-text-tertiary)] mt-1">
+                                    JPG, PNG or GIF. Max 5MB.
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
                     {error && (

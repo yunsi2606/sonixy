@@ -16,6 +16,14 @@ public class UsersController(IUserService userService, ILogger<UsersController> 
 {
     private readonly ILogger<UsersController> _logger = logger;
 
+    [HttpPost("presigned-url")]
+    [ProducesResponseType(typeof(PresignedUrlResponseDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GeneratePresignedUrl([FromBody] PresignedUrlRequestDto request)
+    {
+        var (uploadUrl, objectKey, publicUrl) = await userService.GeneratePresignedUrlAsync(request.FileName, request.ContentType);
+        return Ok(new PresignedUrlResponseDto(uploadUrl, objectKey, publicUrl));
+    }
+
     /// <summary>
     /// Creates a new user profile
     /// </summary>
