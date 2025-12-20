@@ -6,12 +6,14 @@ using Sonixy.PostService.Domain.Repositories;
 using Sonixy.Shared.Interfaces;
 using Sonixy.Shared.Configuration;
 using Sonixy.Shared.Pagination;
+using Sonixy.PostService.Application.Interfaces;
 
 namespace Sonixy.PostService.Application.Services;
 
 public class PostService(
     IPostRepository postRepository,
     IMediaStorage mediaStorage,
+    IUserClient userClient,
     IOptions<MinioOptions> minioOptions) : IPostService
 {
     private readonly MinioOptions _minioOptions = minioOptions.Value;
@@ -48,7 +50,9 @@ public class PostService(
 
         await postRepository.AddAsync(post, cancellationToken);
 
-        return MapToDto(post, authorId);
+        // Fetch author details for the single created post
+        var author = await userClient.GetUserAsync(authorId, cancellationToken);
+        return MapToDto(post, authorId, author);
     }
 
     public async Task<PostDto?> GetPostByIdAsync(string id, string? currentUserId = null, CancellationToken cancellationToken = default)
@@ -57,7 +61,10 @@ public class PostService(
             return null;
 
         var post = await postRepository.GetByIdAsync(objectId, cancellationToken);
-        return post is not null ? MapToDto(post, currentUserId) : null;
+        if (post is null) return null;
+
+        var author = await userClient.GetUserAsync(post.AuthorId.ToString(), cancellationToken);
+        return MapToDto(post, currentUserId, author);
     }
 
     public async Task<CursorPage<PostDto>> GetFeedAsync(string? cursor, string? currentUserId = null, int pageSize = 20, CancellationToken cancellationToken = default)
@@ -66,17 +73,15 @@ public class PostService(
         var posts = (await postRepository.FindAsync(spec, cancellationToken)).ToList();
 
         var hasMore = posts.Count > pageSize;
-        var itemsToReturn = hasMore ? posts.Take(pageSize) : posts;
+        var itemsToReturn = hasMore ? posts.Take(pageSize).ToList() : posts;
+
+        var dtos = await EnrichPostsAsync(itemsToReturn, currentUserId, cancellationToken);
 
         var nextCursor = hasMore
             ? CursorHelper.EncodeCursor(posts[pageSize - 1].Id, posts[pageSize - 1].CreatedAt)
             : null;
 
-        return new CursorPage<PostDto>(
-            itemsToReturn.Select(p => MapToDto(p, currentUserId)),
-            nextCursor,
-            hasMore
-        );
+        return new CursorPage<PostDto>(dtos, nextCursor, hasMore);
     }
 
     public async Task<CursorPage<PostDto>> GetUserPostsAsync(string userId, string? cursor, string? currentUserId = null, int pageSize = 20, CancellationToken cancellationToken = default)
@@ -88,17 +93,15 @@ public class PostService(
         var posts = (await postRepository.FindAsync(spec, cancellationToken)).ToList();
 
         var hasMore = posts.Count > pageSize;
-        var itemsToReturn = hasMore ? posts.Take(pageSize) : posts;
+        var itemsToReturn = hasMore ? posts.Take(pageSize).ToList() : posts;
+
+        var dtos = await EnrichPostsAsync(itemsToReturn, currentUserId, cancellationToken);
 
         var nextCursor = hasMore
             ? CursorHelper.EncodeCursor(posts[pageSize - 1].Id, posts[pageSize - 1].CreatedAt)
             : null;
 
-        return new CursorPage<PostDto>(
-            itemsToReturn.Select(p => MapToDto(p, currentUserId)),
-            nextCursor,
-            hasMore
-        );
+        return new CursorPage<PostDto>(dtos, nextCursor, hasMore);
     }
 
     public async Task<bool> ToggleLikeAsync(string postId, string userId, CancellationToken cancellationToken = default)
@@ -126,7 +129,22 @@ public class PostService(
         return true;
     }
 
-    private PostDto MapToDto(Post post, string? currentUserId)
+    private async Task<List<PostDto>> EnrichPostsAsync(List<Post> posts, string? currentUserId, CancellationToken cancellationToken)
+    {
+        if (posts.Count == 0) return [];
+
+        var authorIds = posts.Select(p => p.AuthorId.ToString()).Distinct();
+        var authors = await userClient.GetUsersBatchAsync(authorIds, cancellationToken);
+        var authorMap = authors.ToDictionary(u => u.Id, u => u);
+
+        return posts.Select(p => 
+        {
+            authorMap.TryGetValue(p.AuthorId.ToString(), out var author);
+            return MapToDto(p, currentUserId, author);
+        }).ToList();
+    }
+
+    private PostDto MapToDto(Post post, string? currentUserId, UserDto? author)
     {
         var isLiked = false;
         if (!string.IsNullOrEmpty(currentUserId) && ObjectId.TryParse(currentUserId, out var userObjectId))
@@ -141,9 +159,17 @@ public class PostService(
             )
         ).ToList();
 
+        // Default displayName/avatar if user service fails or user not found
+        // "Unknown User" or maybe default to just "User"
+        // For avatar, if null, we let frontend handle or set empty string
+        var displayName = author?.DisplayName ?? "Unknown User"; 
+        var avatarUrl = author?.AvatarUrl ?? "";
+
         return new PostDto(
             post.Id.ToString(),
             post.AuthorId.ToString(),
+            displayName,
+            avatarUrl,
             post.Content,
             post.Visibility,
             post.LikeCount,

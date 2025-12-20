@@ -29,6 +29,8 @@ export interface User {
 export interface Post {
     id: string;
     authorId: string;
+    authorName: string;
+    authorAvatarUrl: string;
     content: string;
     visibility: 'public' | 'followers';
     likeCount: number;

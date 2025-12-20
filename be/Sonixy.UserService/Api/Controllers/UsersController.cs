@@ -162,16 +162,29 @@ public class UsersController(IUserService userService, ILogger<UsersController> 
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetMe()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId))
-            return Unauthorized();
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userId))
+                return Unauthorized();
 
-        var user = await userService.GetUserByIdAsync(userId);
-        
-        if (user is null)
-            return NotFound(new { error = "User not found" });
+            _logger.LogInformation("Getting current user profile for ID: {UserId}", userId);
 
-        return Ok(user);
+            var user = await userService.GetUserByIdAsync(userId);
+            
+            if (user is null)
+            {
+                _logger.LogWarning("User not found for ID: {UserId}", userId);
+                return NotFound(new { error = "User not found" });
+            }
+
+            return Ok(user);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving current user profile");
+            return StatusCode(500, new { error = "Internal Server Error", message = ex.Message });
+        }
     }
 }
 

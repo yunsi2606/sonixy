@@ -36,6 +36,8 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
         compact: "text-[var(--color-text-primary)] text-sm leading-normal"
     };
 
+    const authorInitials = post.authorName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
     // Render Hero Card Background
     if (variant === 'hero') {
         return (
@@ -80,7 +82,13 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
                     <div className={`rounded-full bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] p-[2px] ${variant === 'compact' ? 'w-8 h-8' : 'w-10 h-10'}`}>
                         <div className="w-full h-full rounded-full bg-[var(--color-bg-deep)] relative overflow-hidden">
                             {/* Placeholder for Avatar */}
-                            <div className="w-full h-full flex items-center justify-center text-sm font-bold bg-white/5 text-[var(--color-text-secondary)]">U</div>
+                            <div className="w-full h-full rounded-full bg-bg-secondary flex items-center justify-center overflow-hidden">
+                                {post.authorAvatarUrl ? (
+                                    <img src={post.authorAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-lg font-bold text-text-muted">{authorInitials}</span>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -88,7 +96,7 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
                 <div className="flex flex-col">
                     <div className="flex items-center gap-2">
                         <span className="font-semibold text-[var(--color-text-primary)] hover:text-[var(--color-primary)] cursor-pointer transition-colors text-sm">
-                            Username
+                            {post.authorName}
                         </span>
                         {variant !== 'compact' && <span className="text-xs text-[var(--color-text-muted)]">• {timeDisplay}</span>}
                     </div>

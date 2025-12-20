@@ -7,10 +7,7 @@ using MongoDB.Driver;
 using Sonixy.PostService.Application.Services;
 using Sonixy.PostService.Domain.Repositories;
 using Sonixy.PostService.Infrastructure.Repositories;
-using Sonixy.PostService.Infrastructure.Storage;
 using Sonixy.PostService.Application.Interfaces;
-using Minio;
-using Microsoft.Extensions.Options;
 using Sonixy.Shared.Configuration;
 using Sonixy.Shared.Extensions;
 
@@ -44,6 +41,14 @@ builder.Services.AddScoped<IPostService, PostService>();
 
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 builder.Services.AddScoped<ICommentService, CommentService>();
+
+// Clients
+builder.Services.AddGrpcClient<Sonixy.Shared.Protos.UserService.UserServiceClient>(o =>
+{
+    o.Address = new Uri("http://user-service:8189");
+});
+
+builder.Services.AddScoped<IUserClient, Sonixy.PostService.Infrastructure.Clients.GrpcUserClient>();
 
 // JWT Configuration
 builder.Services.Configure<JwtSettings>(
