@@ -1,10 +1,28 @@
-import type { Post } from '@/types/api';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { userService } from '@/services/user.service';
+import type { Post, User } from '@/types/api';
 
 interface PostCardProps {
     post: Post;
 }
 
 export function PostCard({ post }: PostCardProps) {
+    const [author, setAuthor] = useState<User | null>(null);
+
+    useEffect(() => {
+        // Fetch author info
+        userService.getUser(post.authorId)
+            .then(setAuthor)
+            .catch(() => console.error(`Failed to load author for post ${post.id}`));
+    }, [post.authorId, post.id]);
+
+    const authorName = author?.displayName || 'Unknown User';
+    const authorAvatar = author?.avatarUrl;
+    const authorInitials = author
+        ? (author.firstName?.[0] || '') + (author.lastName?.[0] || '')
+        : '?';
+
     return (
         <article className="card card-hover group relative overflow-hidden">
             {/* Gradient Border Effect on Hover */}
@@ -15,18 +33,28 @@ export function PostCard({ post }: PostCardProps) {
             <div className="relative flex items-start gap-4">
                 {/* Avatar with Gradient */}
                 <div className="relative flex-shrink-0">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary via-secondary to-accent p-0.5">
-                        <div className="w-full h-full rounded-full bg-bg-secondary flex items-center justify-center text-xl">
-                            👤
+                    <Link href={`/users/${post.authorId}`}>
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary via-secondary to-accent p-0.5 cursor-pointer hover:scale-105 transition-transform">
+                            <div className="w-full h-full rounded-full bg-bg-secondary flex items-center justify-center overflow-hidden">
+                                {authorAvatar ? (
+                                    <img src={authorAvatar} alt={authorName} className="w-full h-full object-cover" />
+                                ) : (
+                                    <span className="text-lg font-bold text-text-muted">{authorInitials}</span>
+                                )}
+                            </div>
                         </div>
-                    </div>
+                    </Link>
                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-gradient-to-br from-primary to-secondary rounded-full border-2 border-bg-primary" />
                 </div>
 
                 <div className="flex-1 min-w-0">
                     {/* Header */}
                     <div className="flex items-center gap-3 mb-3">
-                        <span className="font-bold text-text-primary text-lg">User</span>
+                        <Link href={`/users/${post.authorId}`} className="group/author flex items-center gap-3">
+                            <span className="font-bold text-text-primary text-lg group-hover/author:text-primary transition-colors">
+                                {author ? authorName : 'Loading...'}
+                            </span>
+                        </Link>
                         <span className="px-2 py-0.5 bg-primary/20 text-primary text-xs font-semibold rounded-full">
                             Pro
                         </span>
@@ -44,6 +72,36 @@ export function PostCard({ post }: PostCardProps) {
                     <p className="text-text-secondary text-base sm:text-lg leading-relaxed mb-6 whitespace-pre-wrap">
                         {post.content}
                     </p>
+
+                    {/* Media Grid */}
+                    {post.media && post.media.length > 0 && (
+                        <div className={`grid gap-2 mb-6 ${post.media.length === 1 ? 'grid-cols-1' :
+                            post.media.length === 2 ? 'grid-cols-2' :
+                                post.media.length === 3 ? 'grid-cols-2' : 'grid-cols-2'
+                            }`}>
+                            {post.media.map((media, index) => (
+                                <div
+                                    key={index}
+                                    className={`relative rounded-xl overflow-hidden bg-black/20 ${post.media!.length === 3 && index === 0 ? 'row-span-2' : 'aspect-video'
+                                        }`}
+                                >
+                                    {media.type === 'video' ? (
+                                        <video
+                                            src={media.url}
+                                            controls
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <img
+                                            src={media.url}
+                                            alt="Post content"
+                                            className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                                        />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Actions Bar */}
                     <div className="flex items-center gap-6">

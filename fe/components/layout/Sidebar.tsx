@@ -10,7 +10,9 @@ export function Sidebar() {
     const router = useRouter();
 
     const onLogout = async () => {
-        await logout ?? Promise.resolve(); // Handle if logout isn't async or defined
+        if (logout) {
+            await logout();
+        }
         router.push('/login');
     };
 
