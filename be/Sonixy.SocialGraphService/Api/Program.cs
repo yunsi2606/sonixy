@@ -2,6 +2,10 @@ using System.Reflection;
 using Microsoft.OpenApi;
 using MongoDB.Driver;
 using Sonixy.Shared.Configuration;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Security.Claims;
 using Sonixy.SocialGraphService.Api.GrpcServices;
 using Sonixy.SocialGraphService.Application.Services;
 using Sonixy.SocialGraphService.Domain.Repositories;
@@ -35,6 +39,40 @@ builder.Services.AddScoped<ISocialGraphService, SocialGraphService>();
 
 // Controllers
 builder.Services.AddControllers();
+
+// JWT Configuration
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection("Jwt"));
+
+var jwtSettings = builder.Configuration.GetSection("Jwt").Get<JwtSettings>()
+    ?? throw new InvalidOperationException("JWT settings not configured");
+
+// Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            NameClaimType = ClaimTypes.NameIdentifier,
+            RoleClaimType = ClaimTypes.Role,
+            
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(jwtSettings.SecretKey)),
+            
+            ValidateIssuer = true,
+            ValidIssuer = jwtSettings.Issuer,
+            
+            ValidateAudience = true,
+            ValidAudience = jwtSettings.Audience,
+            
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+// Authorization
+builder.Services.AddAuthorization();
 
 // gRPC
 builder.Services.AddGrpc();

@@ -95,4 +95,20 @@ public class SocialGraphService(IFollowRepository followRepository, ILikeReposit
 
         return await likeRepository.HasLikedAsync(userOid, postOid, cancellationToken);
     }
+
+    public async Task<long> GetFollowersCountAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        if (!ObjectId.TryParse(userId, out var userOid))
+            return 0;
+
+        return await followRepository.GetFollowerCountAsync(userOid, cancellationToken);
+    }
+
+    public async Task<long> GetFollowingCountAsync(string userId, CancellationToken cancellationToken = default)
+    {
+        if (!ObjectId.TryParse(userId, out var userOid))
+            return 0;
+
+        return await followRepository.GetFollowingCountAsync(userOid, cancellationToken);
+    }
 }

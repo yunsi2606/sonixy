@@ -55,7 +55,7 @@ export function Sidebar() {
 
             {/* Mini Profile Footer */}
             <div className="mt-8 pt-6 border-t border-[var(--glass-border)]">
-                <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 cursor-pointer transition-colors group">
+                <Link href="/profile" className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 cursor-pointer transition-colors group">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] p-[1px]">
                         <div className="w-full h-full rounded-full bg-[var(--color-bg-deep)] overflow-hidden">
                             <div className="w-full h-full flex items-center justify-center bg-white/10 font-bold text-xs">ME</div>
@@ -66,7 +66,7 @@ export function Sidebar() {
                         <div className="text-xs text-[var(--color-text-muted)] truncate">@username</div>
                     </div>
                     <div className="text-[var(--color-text-secondary)]">⋯</div>
-                </div>
+                </Link>
             </div>
         </div>
     );

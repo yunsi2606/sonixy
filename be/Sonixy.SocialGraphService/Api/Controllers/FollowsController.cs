@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sonixy.SocialGraphService.Application.Services;
+using System.Security.Claims;
 
 namespace Sonixy.SocialGraphService.Api.Controllers;
 
@@ -8,6 +10,7 @@ namespace Sonixy.SocialGraphService.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class FollowsController : ControllerBase
 {
     private readonly ISocialGraphService _socialGraphService;
@@ -25,9 +28,12 @@ public class FollowsController : ControllerBase
     [HttpPost("{followingId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> FollowUser(string followingId)
     {
-        var userId = "507f1f77bcf86cd799439011"; // TODO: Extract from JWT
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
         await _socialGraphService.FollowUserAsync(userId, followingId);
         return Ok(new { message = "User followed successfully" });
     }
@@ -38,9 +44,12 @@ public class FollowsController : ControllerBase
     /// <param name="followingId">ID of the user to unfollow</param>
     [HttpDelete("{followingId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> UnfollowUser(string followingId)
     {
-        var userId = "507f1f77bcf86cd799439011"; // TODO: Extract from JWT
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
         await _socialGraphService.UnfollowUserAsync(userId, followingId);
         return Ok(new { message = "User unfollowed successfully" });
     }
@@ -50,10 +59,37 @@ public class FollowsController : ControllerBase
     /// </summary>
     [HttpGet("{followingId}/status")]
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<IActionResult> GetFollowStatus(string followingId)
     {
-        var userId = "507f1f77bcf86cd799439011"; // TODO: Extract from JWT
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
         var isFollowing = await _socialGraphService.IsFollowingAsync(userId, followingId);
         return Ok(new { isFollowing });
+    }
+
+    /// <summary>
+    /// Get follower count for a user
+    /// </summary>
+    [HttpGet("{userId}/followers/count")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetFollowersCount(string userId)
+    {
+        var count = await _socialGraphService.GetFollowersCountAsync(userId);
+        return Ok(new { count });
+    }
+
+    /// <summary>
+    /// Get following count for a user
+    /// </summary>
+    [HttpGet("{userId}/following/count")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetFollowingCount(string userId)
+    {
+        var count = await _socialGraphService.GetFollowingCountAsync(userId);
+        return Ok(new { count });
     }
 }

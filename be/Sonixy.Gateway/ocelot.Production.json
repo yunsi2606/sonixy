@@ -82,7 +82,7 @@
             }
         },
         {
-            "DownstreamPathTemplate": "/api/Follows/{everything}",
+            "DownstreamPathTemplate": "/api/Social/{everything}",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {

@@ -7,11 +7,12 @@ import { userService, type UpdateUserDto } from '@/services/user.service';
 import { postService } from '@/services/post.service';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { PostCard } from '@/components/common/PostCard';
+import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import type { User } from '@/types/api';
 
 export default function ProfilePage() {
     const router = useRouter();
-    const { isAuthenticated, userId, logout } = useAuth();
+    const { isAuthenticated, userId, logout, isLoading: authLoading } = useAuth();
     const [user, setUser] = useState<User | null>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState({ firstName: '', lastName: '', bio: '' });
@@ -27,13 +28,15 @@ export default function ProfilePage() {
     });
 
     useEffect(() => {
+        if (authLoading) return;
+
         if (!isAuthenticated) {
             router.push('/login');
             return;
         }
 
         loadUser();
-    }, [isAuthenticated, router]);
+    }, [isAuthenticated, authLoading, router]);
 
     const loadUser = async () => {
         try {
@@ -104,80 +107,64 @@ export default function ProfilePage() {
 
             <div className="max-w-4xl mx-auto px-4 py-8">
                 {/* Profile Section */}
-                <div className="glass p-8 rounded-2xl mb-8">
-                    <div className="flex items-start gap-6">
-                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] flex-shrink-0" />
-
-                        <div className="flex-1">
-                            {isEditing ? (
-                                <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <input
-                                            type="text"
-                                            value={editForm.firstName}
-                                            onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
-                                            className="w-full px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-border-focus)]"
-                                            placeholder="First Name"
-                                        />
-                                        <input
-                                            type="text"
-                                            value={editForm.lastName}
-                                            onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
-                                            className="w-full px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-border-focus)]"
-                                            placeholder="Last Name"
-                                        />
-                                    </div>
-                                    <textarea
-                                        value={editForm.bio}
-                                        onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
-                                        className="w-full px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-border-focus)] resize-none"
-                                        placeholder="Bio"
-                                        rows={3}
-                                    />
-                                    <div className="flex gap-3">
-                                        <button
-                                            onClick={handleSave}
-                                            disabled={isSaving}
-                                            className="px-6 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-xl font-medium transition-all disabled:opacity-50"
-                                        >
-                                            {isSaving ? 'Saving...' : 'Save'}
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                setIsEditing(false);
-                                                setEditForm({
-                                                    firstName: user.firstName || '',
-                                                    lastName: user.lastName || '',
-                                                    bio: user.bio
-                                                });
-                                            }}
-                                            className="px-6 py-2 bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] rounded-xl font-medium transition-all"
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <h1 className="text-3xl font-bold">{user.displayName}</h1>
-                                        <button
-                                            onClick={() => setIsEditing(true)}
-                                            className="px-4 py-2 bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] rounded-xl text-sm font-medium transition-all"
-                                        >
-                                            Edit Profile
-                                        </button>
-                                    </div>
-                                    <p className="text-[var(--color-text-secondary)] mb-4">{user.email}</p>
-                                    <p className="text-[var(--color-text-primary)]">{user.bio || 'No bio yet'}</p>
-                                    <p className="text-sm text-[var(--color-text-muted)] mt-4">
-                                        Joined {new Date(user.createdAt).toLocaleDateString()}
-                                    </p>
-                                </>
-                            )}
+                {isEditing ? (
+                    <div className="glass p-8 rounded-2xl mb-8 animate-fade-in">
+                        <h2 className="text-2xl font-bold mb-6">Edit Profile</h2>
+                        <div className="space-y-4 max-w-xl">
+                            <div className="grid grid-cols-2 gap-4">
+                                <input
+                                    type="text"
+                                    value={editForm.firstName}
+                                    onChange={(e) => setEditForm({ ...editForm, firstName: e.target.value })}
+                                    className="w-full px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-border-focus)]"
+                                    placeholder="First Name"
+                                />
+                                <input
+                                    type="text"
+                                    value={editForm.lastName}
+                                    onChange={(e) => setEditForm({ ...editForm, lastName: e.target.value })}
+                                    className="w-full px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-border-focus)]"
+                                    placeholder="Last Name"
+                                />
+                            </div>
+                            <textarea
+                                value={editForm.bio}
+                                onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                                className="w-full px-4 py-2 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl focus:outline-none focus:border-[var(--color-border-focus)] resize-none"
+                                placeholder="Bio"
+                                rows={3}
+                            />
+                            <div className="flex gap-3 pt-4">
+                                <button
+                                    onClick={handleSave}
+                                    disabled={isSaving}
+                                    className="px-6 py-2 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-xl font-medium transition-all disabled:opacity-50"
+                                >
+                                    {isSaving ? 'Saving...' : 'Save Changes'}
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setIsEditing(false);
+                                        setEditForm({
+                                            firstName: user.firstName || '',
+                                            lastName: user.lastName || '',
+                                            bio: user.bio,
+                                        });
+                                    }}
+                                    className="px-6 py-2 bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] rounded-xl font-medium transition-all"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
+                ) : (
+                    <ProfileHeader
+                        user={user}
+                        isOwnProfile={true}
+                        onEdit={() => setIsEditing(true)}
+                    />
+                )}
 
                 {/* Posts Section */}
                 <div>

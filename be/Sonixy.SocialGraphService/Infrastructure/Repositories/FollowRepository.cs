@@ -93,4 +93,14 @@ public class FollowRepository : IFollowRepository
     {
         await _collection.DeleteOneAsync(f => f.Id == id, cancellationToken);
     }
+
+    public async Task<long> GetFollowerCountAsync(ObjectId userId, CancellationToken cancellationToken = default)
+    {
+        return await _collection.CountDocumentsAsync(f => f.FollowingId == userId, cancellationToken: cancellationToken);
+    }
+
+    public async Task<long> GetFollowingCountAsync(ObjectId userId, CancellationToken cancellationToken = default)
+    {
+        return await _collection.CountDocumentsAsync(f => f.FollowerId == userId, cancellationToken: cancellationToken);
+    }
 }
