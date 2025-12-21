@@ -3,6 +3,7 @@ using Sonixy.IdentityService.Application.DTOs;
 using Sonixy.IdentityService.Domain.Entities;
 using Sonixy.IdentityService.Domain.Repositories;
 using Sonixy.Shared.Configuration;
+using Sonixy.Shared.Protos;
 
 namespace Sonixy.IdentityService.Application.Services;
 
@@ -11,7 +12,7 @@ public class AuthService(
     IRefreshTokenRepository refreshTokenRepository,
     IPasswordHasher passwordHasher,
     ITokenService tokenService,
-    Sonixy.Shared.Protos.UserService.UserServiceClient userServiceClient,
+    UserService.UserServiceClient userServiceClient,
     IOptions<JwtSettings> jwtSettings) : IAuthService
 {
     private readonly JwtSettings _jwtSettings = jwtSettings.Value;
@@ -42,6 +43,7 @@ public class AuthService(
             {
                 Id = account.Id.ToString(),
                 Email = dto.Email,
+                Username = dto.Username,
                 FirstName = "",
                 LastName = ""
             }, cancellationToken: cancellationToken);

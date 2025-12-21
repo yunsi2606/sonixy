@@ -20,7 +20,8 @@ public class GrpcUserClient(
             return new UserDto(
                 response.Id,
                 response.DisplayName,
-                response.AvatarUrl
+                response.AvatarUrl,
+                response.Username
             );
         }
         catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
@@ -46,13 +47,33 @@ public class GrpcUserClient(
             return response.Users.Select(u => new UserDto(
                 u.Id,
                 u.DisplayName,
-                u.AvatarUrl
+                u.AvatarUrl,
+                u.Username
             )).ToList();
         }
         catch (Exception ex)
         {
             logger.LogError(ex, "Failed to fetch batch users via gRPC");
             return [];
+        }
+    }
+
+    public async Task<string?> GetUserIdByUsernameAsync(string username, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var request = new GetIdByUsernameRequest { Username = username };
+            var response = await grpcClient.GetIdByUsernameAsync(request, cancellationToken: cancellationToken);
+            return response.Id;
+        }
+        catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
+        {
+            return null;
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to resolve username {Username} via gRPC", username);
+            return null;
         }
     }
 }

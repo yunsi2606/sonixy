@@ -21,6 +21,11 @@ export const userService = {
         return apiClient.get<User>(`${USER_BASE}/me`);
     },
 
+    async checkUsernameAvailability(username: string): Promise<boolean> {
+        const response = await apiClient.get<{ available: boolean }>(`${USER_BASE}/check-username?username=${encodeURIComponent(username)}`);
+        return response.available;
+    },
+
     async updateUser(id: string, data: UpdateUserDto): Promise<User> {
         const token = authService.getAccessToken();
         return apiClient.patch<User>(`${USER_BASE}/${id}`, data, token || undefined);

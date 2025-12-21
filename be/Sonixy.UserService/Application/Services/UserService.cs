@@ -23,11 +23,18 @@ public class UserService(IUserRepository userRepository, IMediaStorage mediaStor
             throw new InvalidOperationException("Email already exists");
         }
 
+        // Check if username already exists
+        if (await userRepository.UsernameExistsAsync(dto.Username, cancellationToken))
+        {
+            throw new InvalidOperationException("Username already exists");
+        }
+
         var user = new User
         {
             FirstName = dto.FirstName,
             LastName = dto.LastName,
             Email = dto.Email.ToLowerInvariant(),
+            Username = dto.Username,
             Bio = dto.Bio ?? string.Empty,
             AvatarUrl = dto.AvatarUrl ?? string.Empty
         };
@@ -55,6 +62,17 @@ public class UserService(IUserRepository userRepository, IMediaStorage mediaStor
     {
         var user = await userRepository.GetByEmailAsync(email, cancellationToken);
         return user is not null ? MapToDto(user) : null;
+    }
+
+    public async Task<UserDto?> GetUserByUsernameAsync(string username, CancellationToken cancellationToken = default)
+    {
+        var user = await userRepository.GetByUsernameAsync(username, cancellationToken);
+        return user is not null ? MapToDto(user) : null;
+    }
+
+    public async Task<bool> IsUsernameAvailableAsync(string username, CancellationToken cancellationToken = default)
+    {
+        return !await userRepository.UsernameExistsAsync(username, cancellationToken);
     }
 
     public async Task<UserDto> UpdateUserAsync(string id, UpdateUserDto dto, CancellationToken cancellationToken = default)
@@ -105,6 +123,7 @@ public class UserService(IUserRepository userRepository, IMediaStorage mediaStor
         user.LastName,
         user.DisplayName,
         user.Email,
+        user.Username,
         user.Bio,
         user.AvatarUrl,
         user.CreatedAt

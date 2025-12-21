@@ -7,6 +7,7 @@ export interface AuthResponse {
 
 export interface RegisterDto {
     email: string;
+    username: string; // Add this
     password: string;
 }
 
@@ -17,6 +18,7 @@ export interface LoginDto {
 
 export interface User {
     id: string;
+    username: string;
     firstName?: string;
     lastName?: string;
     displayName: string;
@@ -29,8 +31,9 @@ export interface User {
 export interface Post {
     id: string;
     authorId: string;
-    authorName: string;
+    authorDisplayName: string;
     authorAvatarUrl: string;
+    authorUsername: string;
     content: string;
     visibility: 'public' | 'followers';
     likeCount: number;

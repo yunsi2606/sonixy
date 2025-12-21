@@ -86,8 +86,17 @@ public class PostService(
 
     public async Task<CursorPage<PostDto>> GetUserPostsAsync(string userId, string? cursor, string? currentUserId = null, int pageSize = 20, CancellationToken cancellationToken = default)
     {
-        if (!ObjectId.TryParse(userId, out var userObjectId))
-            return new CursorPage<PostDto>([], null, false);
+        ObjectId userObjectId;
+        if (!ObjectId.TryParse(userId, out userObjectId))
+        {
+            // Try resolving via username
+            var resolvedId = await userClient.GetUserIdByUsernameAsync(userId, cancellationToken);
+            if (string.IsNullOrEmpty(resolvedId) || !ObjectId.TryParse(resolvedId, out userObjectId))
+            {
+                // User not found
+                 return new CursorPage<PostDto>([], null, false);
+            }
+        }
 
         var spec = new UserPostsSpecification(userObjectId, cursor, pageSize + 1);
         var posts = (await postRepository.FindAsync(spec, cancellationToken)).ToList();
@@ -164,12 +173,14 @@ public class PostService(
         // For avatar, if null, we let frontend handle or set empty string
         var displayName = author?.DisplayName ?? "Unknown User"; 
         var avatarUrl = author?.AvatarUrl ?? "";
+        var username = author?.Username ?? "";
 
         return new PostDto(
             post.Id.ToString(),
             post.AuthorId.ToString(),
             displayName,
             avatarUrl,
+            username,
             post.Content,
             post.Visibility,
             post.LikeCount,

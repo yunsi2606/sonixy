@@ -6,7 +6,8 @@ export function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // Paths that require authentication
-    const protectedPaths = ['/feed', '/profile', '/messages', '/notifications'];
+    // Paths that require authentication
+    const protectedPaths = ['/feed', '/u/', '/messages', '/notifications'];
     const isProtectedPath = protectedPaths.some(path => pathname.startsWith(path));
 
     // Paths for guests only (redirect to feed if logged in)

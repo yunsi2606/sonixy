@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import { Sidebar } from './Sidebar';
 import { RightSidebar } from './RightSidebar';
 
@@ -15,7 +16,7 @@ export const GlassShell: React.FC<GlassShellProps> = ({ children }) => {
 
     // Logic to determine if sidebars should be shown
     const isSocialPage = pathname.startsWith('/feed') ||
-        pathname.startsWith('/profile') ||
+        pathname.startsWith('/u/') ||
         pathname.startsWith('/explore') ||
         pathname.startsWith('/messages') ||
         pathname.startsWith('/notifications') ||
@@ -82,24 +83,33 @@ export const GlassShell: React.FC<GlassShellProps> = ({ children }) => {
 
             {/* Mobile Bottom Nav (Only on Social Pages and Mobile) */}
             {isSocialPage && (
-                <div className="fixed bottom-0 left-0 right-0 h-16 glass-overlay border-t border-[var(--glass-border)] flex lg:hidden items-center justify-around z-50">
-                    <Link href="/feed" className="flex flex-col items-center gap-1 text-[var(--color-primary)]">
-                        <span className="text-xl">🏠</span>
-                    </Link>
-                    <Link href="/explore" className="flex flex-col items-center gap-1 text-[var(--color-text-secondary)]">
-                        <span className="text-xl">🌍</span>
-                    </Link>
-                    <button className="w-10 h-10 rounded-full bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center shadow-[var(--shadow-neon)] -mt-6 ring-4 ring-[#0B0F1A]">
-                        <span className="text-white text-xl">+</span>
-                    </button>
-                    <Link href="/notifications" className="flex flex-col items-center gap-1 text-[var(--color-text-secondary)]">
-                        <span className="text-xl">🔔</span>
-                    </Link>
-                    <Link href="/profile" className="flex flex-col items-center gap-1 text-[var(--color-text-secondary)]">
-                        <span className="text-xl">👤</span>
-                    </Link>
-                </div>
+                <MobileBottomNav />
             )}
         </div>
     );
 };
+
+
+function MobileBottomNav() {
+    const { user } = useAuth();
+
+    return (
+        <div className="fixed bottom-0 left-0 right-0 h-16 glass-overlay border-t border-[var(--glass-border)] flex lg:hidden items-center justify-around z-50">
+            <Link href="/feed" className="flex flex-col items-center gap-1 text-[var(--color-primary)]">
+                <span className="text-xl">🏠</span>
+            </Link>
+            <Link href="/explore" className="flex flex-col items-center gap-1 text-[var(--color-text-secondary)]">
+                <span className="text-xl">🌍</span>
+            </Link>
+            <button className="w-10 h-10 rounded-full bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center shadow-[var(--shadow-neon)] -mt-6 ring-4 ring-[#0B0F1A]">
+                <span className="text-white text-xl">+</span>
+            </button>
+            <Link href="/notifications" className="flex flex-col items-center gap-1 text-[var(--color-text-secondary)]">
+                <span className="text-xl">🔔</span>
+            </Link>
+            <Link href={user ? `/u/${user.username}` : '/login'} className="flex flex-col items-center gap-1 text-[var(--color-text-secondary)]">
+                <span className="text-xl">👤</span>
+            </Link>
+        </div>
+    );
+}

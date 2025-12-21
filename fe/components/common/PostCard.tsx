@@ -8,7 +8,7 @@ interface PostCardProps {
 }
 
 export function PostCard({ post }: PostCardProps) {
-    const authorName = post.authorName || 'Unknown User';
+    const authorName = post.authorDisplayName || 'Unknown User';
     const authorAvatar = post.authorAvatarUrl;
 
     // Fallback initials from name if fetching failed or not available logic 
@@ -25,7 +25,7 @@ export function PostCard({ post }: PostCardProps) {
             <div className="relative flex items-start gap-4">
                 {/* Avatar with Gradient */}
                 <div className="relative flex-shrink-0">
-                    <Link href={`/users/${post.authorId}`} className="relative z-10 block">
+                    <Link href={`/u/${post.authorUsername}`} className="relative z-10 block">
                         <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary via-secondary to-accent p-0.5 cursor-pointer hover:scale-105 transition-transform">
                             <div className="w-full h-full rounded-full bg-bg-secondary flex items-center justify-center overflow-hidden">
                                 {authorAvatar ? (
@@ -42,7 +42,7 @@ export function PostCard({ post }: PostCardProps) {
                 <div className="flex-1 min-w-0">
                     {/* Header */}
                     <div className="flex items-center gap-3 mb-3">
-                        <Link href={`/users/${post.authorId}`} className="group/author flex items-center gap-3 relative z-10">
+                        <Link href={`/u/${post.authorUsername}`} className="group/author flex items-center gap-3 relative z-10">
                             <span className="font-bold text-text-primary text-lg group-hover/author:text-primary transition-colors">
                                 {authorName}
                             </span>

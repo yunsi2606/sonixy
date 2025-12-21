@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 
 export function Sidebar() {
-    const { logout } = useAuth();
+    const { user, logout } = useAuth();
     const router = useRouter();
 
     const onLogout = async () => {
@@ -15,6 +15,8 @@ export function Sidebar() {
         }
         router.push('/login');
     };
+
+    const profileLink = user?.username ? `/u/${user.username}` : '#';
 
     return (
         <div className="flex flex-col gap-6">
@@ -57,17 +59,20 @@ export function Sidebar() {
 
             {/* Mini Profile Footer */}
             <div className="mt-8 pt-6 border-t border-[var(--glass-border)]">
-                <Link href="/profile" className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 cursor-pointer transition-colors group">
+                <Link href={profileLink} className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/5 cursor-pointer transition-colors group">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] p-[1px]">
-                        <div className="w-full h-full rounded-full bg-[var(--color-bg-deep)] overflow-hidden">
-                            <div className="w-full h-full flex items-center justify-center bg-white/10 font-bold text-xs">ME</div>
-                        </div>
+                        <img
+                            src={user?.avatarUrl || "https://api.dicebear.com/9.x/avataaars/svg?seed=" + (user?.username || "Guest")}
+                            alt="Avatar"
+                            className="w-full h-full rounded-full bg-[var(--color-bg-deep)] object-cover"
+                        />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <div className="font-bold text-sm text-white group-hover:text-[var(--color-primary)] transition-colors">My Profile</div>
-                        <div className="text-xs text-[var(--color-text-muted)] truncate">@username</div>
+                        <div className="font-bold text-sm text-white group-hover:text-[var(--color-primary)] transition-colors">
+                            {user?.displayName || "My Profile"}
+                        </div>
+                        <div className="text-xs text-[var(--color-text-muted)] truncate">@{user?.username || "username"}</div>
                     </div>
-                    <div className="text-[var(--color-text-secondary)]">⋯</div>
                 </Link>
             </div>
         </div>

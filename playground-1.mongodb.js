@@ -1,71 +1,52 @@
+/* global use, db */
 // MongoDB Playground
-// Switch to the users database
+// Update users with missing usernames
+
+// Switch to the correct database
 use('sonixy_users');
 
-// Update or Insert Client One
-db.getCollection('users').updateOne(
-    { _id: ObjectId("694139c16f1460bf247efe09") },
-    {
-        $set: {
-            "FirstName": "Client",
-            "LastName": "One",
-            // "DisplayName": "Client One", // Computed property, do not store
-            "Email": "client1@gmail.com",
-            "Bio": "New user on Sonixy",
-            "AvatarUrl": "",
-            "CreatedAt": ISODate("2025-12-16T10:51:44.621Z"),
-            "UpdatedAt": ISODate("2025-12-16T10:51:44.621Z")
-        },
-        $unset: { "DisplayName": "" }
-    },
-    { upsert: true }
-);
+// Find all users without a username or with null username
+const users = db.getCollection('users').find({
+    $or: [
+        { Username: { $exists: false } },
+        { Username: null },
+        { Username: "" }
+    ]
+}).toArray();
 
-// Update or Insert Client Two
-db.getCollection('users').updateOne(
-    { _id: ObjectId("69413f85d51d4a10fa4d6985") },
-    {
-        $set: {
-            "FirstName": "Client",
-            "LastName": "Two",
-            // "DisplayName": "Client Two",
-            "Email": "client2@gmail.com",
-            "Bio": "Exploring the platform",
-            "AvatarUrl": "",
-            "CreatedAt": ISODate("2025-12-16T11:16:20.210Z"),
-            "UpdatedAt": ISODate("2025-12-16T11:16:20.210Z")
-        },
-        $unset: { "DisplayName": "" }
-    },
-    { upsert: true }
-);
+console.log(`Found ${users.length} users to update.`);
 
-// Update or Insert User B
-db.getCollection('users').updateOne(
-    { _id: ObjectId("694378ba7205e15245b90fbd") },
-    {
-        $set: {
-            "FirstName": "User",
-            "LastName": "B",
-            // "DisplayName": "User B",
-            "Email": "bbbb@gmail.com",
-            "Bio": "Hello World",
-            "AvatarUrl": "",
-            "CreatedAt": ISODate("2025-12-18T03:44:58.193Z"),
-            "UpdatedAt": ISODate("2025-12-18T03:44:58.193Z")
-        },
-        $unset: { "DisplayName": "" }
-    },
-    { upsert: true }
-);
+users.forEach(user => {
+    let newUsername = "";
 
-// Verify insertion
-db.getCollection('users').find({
-    _id: {
-        $in: [
-            ObjectId("694139c16f1460bf247efe09"),
-            ObjectId("69413f85d51d4a10fa4d6985"),
-            ObjectId("694378ba7205e15245b90fbd")
-        ]
+    if (user.Email) {
+        // Try to use email prefix
+        const emailPrefix = user.Email.split('@')[0];
+        newUsername = emailPrefix;
+    } else {
+        // Fallback to ID if no email
+        newUsername = `user_${user._id.toString()}`;
     }
+
+    // Ensure uniqueness (basic check, appending random suffix if needed could be better but sticking to simple rule for now)
+    // Check if this username already exists
+    const exists = db.getCollection('users').findOne({ Username: newUsername, _id: { $ne: user._id } });
+    if (exists) {
+        newUsername = `${newUsername}_${Math.floor(Math.random() * 1000)}`;
+    }
+
+    db.getCollection('users').updateOne(
+        { _id: user._id },
+        {
+            $set: {
+                Username: newUsername,
+                // Also update DisplayName if it's "Unknown User" or missing
+                DisplayName: (!user.FirstName && !user.LastName) ? newUsername : (user.DisplayName === "Unknown User" ? newUsername : user.DisplayName)
+            }
+        }
+    );
+
+    console.log(`Updated user ${user._id}: Set Username to '${newUsername}'`);
 });
+
+console.log('Migration completed.');

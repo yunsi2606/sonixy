@@ -19,6 +19,10 @@ public class UserRepository : IUserRepository
         var indexKeys = Builders<User>.IndexKeys.Ascending(u => u.Email);
         var indexModel = new CreateIndexModel<User>(indexKeys, new CreateIndexOptions { Unique = true });
         _collection.Indexes.CreateOneAsync(indexModel);
+
+        var usernameIndexKeys = Builders<User>.IndexKeys.Ascending(u => u.Username);
+        var usernameIndexModel = new CreateIndexModel<User>(usernameIndexKeys, new CreateIndexOptions { Unique = true });
+        _collection.Indexes.CreateOneAsync(usernameIndexModel);
     }
 
     public async Task<User?> GetByIdAsync(ObjectId id, CancellationToken cancellationToken = default)
@@ -41,6 +45,20 @@ public class UserRepository : IUserRepository
         var normalizedEmail = email.ToLowerInvariant();
         return await _collection
             .Find(u => u.Email == normalizedEmail)
+            .AnyAsync(cancellationToken);
+    }
+
+    public async Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
+    {
+        return await _collection
+            .Find(u => u.Username == username)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
+    public async Task<bool> UsernameExistsAsync(string username, CancellationToken cancellationToken = default)
+    {
+         return await _collection
+            .Find(u => u.Username == username)
             .AnyAsync(cancellationToken);
     }
 

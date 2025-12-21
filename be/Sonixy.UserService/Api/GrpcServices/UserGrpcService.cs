@@ -28,7 +28,8 @@ public class UserGrpcService(IUserService userService) : Shared.Protos.UserServi
             AvatarUrl = user.AvatarUrl,
             CreatedAt = user.CreatedAt.ToString(CultureInfo.CurrentCulture),
             FirstName = user.FirstName ?? "",
-            LastName = user.LastName ?? ""
+            LastName = user.LastName ?? "",
+            Username = user.Username ?? ""
         };
     }
 
@@ -52,7 +53,8 @@ public class UserGrpcService(IUserService userService) : Shared.Protos.UserServi
                 Bio = user.Bio,
                 AvatarUrl = user.AvatarUrl,
                 FirstName = user.FirstName ?? "",
-                LastName = user.LastName ?? ""
+                LastName = user.LastName ?? "",
+                Username = user.Username ?? ""
             });
         }
 
@@ -79,6 +81,7 @@ public class UserGrpcService(IUserService userService) : Shared.Protos.UserServi
             request.FirstName,
             request.LastName,
             request.Email,
+            request.Username,
             null,
             null,
             request.Id
@@ -94,7 +97,25 @@ public class UserGrpcService(IUserService userService) : Shared.Protos.UserServi
             Bio = user.Bio ?? "",
             AvatarUrl = user.AvatarUrl ?? "",
             FirstName = user.FirstName ?? "",
-            LastName = user.LastName ?? ""
+            LastName = user.LastName ?? "",
+            Username = user.Username ?? ""
+        };
+    }
+
+    public override async Task<GetIdByUsernameResponse> GetIdByUsername(
+        GetIdByUsernameRequest request,
+        ServerCallContext context)
+    {
+        var user = await userService.GetUserByUsernameAsync(request.Username, context.CancellationToken);
+        
+        if (user is null)
+        {
+             throw new RpcException(new Status(StatusCode.NotFound, "User not found"));
+        }
+
+        return new GetIdByUsernameResponse
+        {
+            Id = user.Id
         };
     }
 }

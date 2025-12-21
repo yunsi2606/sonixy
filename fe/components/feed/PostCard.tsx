@@ -1,5 +1,6 @@
 import type { Post } from '@/types/api';
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { Lightbox } from '../common/Lightbox';
 
 interface PostCardProps {
@@ -36,7 +37,7 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
         compact: "text-[var(--color-text-primary)] text-sm leading-normal"
     };
 
-    const authorInitials = post.authorName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+    const authorInitials = post.authorDisplayName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
     // Render Hero Card Background
     if (variant === 'hero') {
@@ -79,25 +80,27 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
             {/* Header */}
             <div className={`flex items-center gap-3 ${variant === 'compact' ? 'mb-2' : 'mb-4'}`}>
                 <div className="relative cursor-pointer avatar-ring">
-                    <div className={`rounded-full bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] p-[2px] ${variant === 'compact' ? 'w-8 h-8' : 'w-10 h-10'}`}>
-                        <div className="w-full h-full rounded-full bg-[var(--color-bg-deep)] relative overflow-hidden">
-                            {/* Placeholder for Avatar */}
-                            <div className="w-full h-full rounded-full bg-bg-secondary flex items-center justify-center overflow-hidden">
-                                {post.authorAvatarUrl ? (
-                                    <img src={post.authorAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
-                                ) : (
-                                    <span className="text-lg font-bold text-text-muted">{authorInitials}</span>
-                                )}
+                    <Link href={`/u/${post.authorUsername}`}>
+                        <div className={`rounded-full bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] p-[2px] ${variant === 'compact' ? 'w-8 h-8' : 'w-10 h-10'}`}>
+                            <div className="w-full h-full rounded-full bg-[var(--color-bg-deep)] relative overflow-hidden">
+                                {/* Placeholder for Avatar */}
+                                <div className="w-full h-full rounded-full bg-bg-secondary flex items-center justify-center overflow-hidden">
+                                    {post.authorAvatarUrl ? (
+                                        <img src={post.authorAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="text-lg font-bold text-text-muted">{authorInitials}</span>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </Link>
                 </div>
 
                 <div className="flex flex-col">
                     <div className="flex items-center gap-2">
-                        <span className="font-semibold text-[var(--color-text-primary)] hover:text-[var(--color-primary)] cursor-pointer transition-colors text-sm">
-                            {post.authorName}
-                        </span>
+                        <Link href={`/u/${post.authorUsername}`} className="font-semibold text-[var(--color-text-primary)] hover:text-[var(--color-primary)] cursor-pointer transition-colors text-sm">
+                            {post.authorDisplayName}
+                        </Link>
                         {variant !== 'compact' && <span className="text-xs text-[var(--color-text-muted)]">• {timeDisplay}</span>}
                     </div>
                 </div>

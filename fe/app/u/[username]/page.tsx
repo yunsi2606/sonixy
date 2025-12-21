@@ -1,54 +1,70 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { userService, type UpdateUserDto } from '@/services/user.service';
+import { userService } from '@/services/user.service';
 import { postService } from '@/services/post.service';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { PostCard } from '@/components/common/PostCard';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import type { User } from '@/types/api';
 
-export default function ProfilePage() {
+export default function UserProfilePage() {
     const router = useRouter();
-    const { isAuthenticated, userId, logout, isLoading: authLoading } = useAuth();
+    const params = useParams();
+    const username = params?.username as string;
+
+    const { isAuthenticated, userId: currentUserId, user: currentUser, logout } = useAuth();
     const [user, setUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [isEditing, setIsEditing] = useState(false);
     const [editForm, setEditForm] = useState({ firstName: '', lastName: '', bio: '' });
-    const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
-    const { items: posts, isLoading: postsLoading } = useInfiniteScroll({
+    const { items: posts, isLoading: postsLoading, refresh } = useInfiniteScroll({
         fetchFunction: (cursor) => {
-            if (!userId) throw new Error('Not authenticated');
-            return postService.getUserPosts(userId, cursor);
+            return postService.getUserPosts(username, cursor);
         },
         pageSize: 20,
+        dependencies: [username], // Refresh if username changes
+        enabled: !!username
     });
 
     useEffect(() => {
-        if (authLoading) return;
+        loadUser();
+    }, [username]);
 
-        if (!isAuthenticated) {
-            router.push('/login');
+    const isOwnProfile = user?.id === currentUserId;
+
+    // Initialize edit form when user loads and we might edit
+    useEffect(() => {
+        if (user && isOwnProfile) {
+            setEditForm({
+                firstName: user.firstName || '',
+                lastName: user.lastName || '',
+                bio: user.bio,
+            });
+        }
+    }, [user, isOwnProfile]);
+
+    const loadUser = async () => {
+        console.log('loadUser called with username:', username);
+        if (!username) {
+            console.log('No username, stopping loading');
+            setIsLoading(false);
             return;
         }
 
-        loadUser();
-    }, [isAuthenticated, authLoading, router]);
-
-    const loadUser = async () => {
+        setIsLoading(true);
         try {
-            const userData = await userService.getCurrentUser();
+            console.log('Fetching user data for:', username);
+            const userData = await userService.getUser(username);
+            console.log('User data received:', userData);
             setUser(userData);
-            setEditForm({
-                firstName: userData.firstName || '',
-                lastName: userData.lastName || '',
-                bio: userData.bio,
-            });
         } catch (error) {
             console.error('Failed to load user:', error);
+            // Redirect or show 404
         } finally {
             setIsLoading(false);
         }
@@ -85,8 +101,9 @@ export default function ProfilePage() {
         );
     }
 
+
     return (
-        <main className="min-h-screen bg-[var(--color-bg-primary)]">
+        <div className="pb-8">
             {/* Header */}
             <header className="glass sticky top-0 z-10 border-b border-[var(--color-border)]">
                 <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -96,18 +113,29 @@ export default function ProfilePage() {
                     >
                         ← Back to Feed
                     </button>
-                    <button
-                        onClick={() => logout()}
-                        className="px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-                    >
-                        Logout
-                    </button>
+                    <div className="flex gap-4">
+                        {isAuthenticated && !isOwnProfile && (
+                            <button
+                                onClick={() => router.push(`/u/${currentUser?.username}`)}
+                                className="text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                            >
+                                My Profile
+                            </button>
+                        )}
+                        {isOwnProfile && (
+                            <button
+                                onClick={() => logout()}
+                                className="px-4 py-2 text-sm text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                            >
+                                Logout
+                            </button>
+                        )}
+                    </div>
                 </div>
             </header>
 
             <div className="max-w-4xl mx-auto px-4 py-8">
-                {/* Profile Section */}
-                {isEditing ? (
+                {isEditing && isOwnProfile ? (
                     <div className="glass p-8 rounded-2xl mb-8 animate-fade-in">
                         <h2 className="text-2xl font-bold mb-6">Edit Profile</h2>
                         <div className="space-y-4 max-w-xl">
@@ -145,11 +173,14 @@ export default function ProfilePage() {
                                 <button
                                     onClick={() => {
                                         setIsEditing(false);
-                                        setEditForm({
-                                            firstName: user.firstName || '',
-                                            lastName: user.lastName || '',
-                                            bio: user.bio,
-                                        });
+                                        // Reset form
+                                        if (user) {
+                                            setEditForm({
+                                                firstName: user.firstName || '',
+                                                lastName: user.lastName || '',
+                                                bio: user.bio,
+                                            });
+                                        }
                                     }}
                                     className="px-6 py-2 bg-[var(--color-surface)] hover:bg-[var(--color-surface-hover)] rounded-xl font-medium transition-all"
                                 >
@@ -161,14 +192,14 @@ export default function ProfilePage() {
                 ) : (
                     <ProfileHeader
                         user={user}
-                        isOwnProfile={true}
+                        isOwnProfile={isOwnProfile}
                         onEdit={() => setIsEditing(true)}
                     />
                 )}
 
                 {/* Posts Section */}
                 <div>
-                    <h2 className="text-2xl font-bold mb-6">Your Posts</h2>
+                    <h2 className="text-2xl font-bold mb-6">{isOwnProfile ? 'Your Posts' : 'Posts'}</h2>
                     <div className="space-y-4">
                         {postsLoading && posts.length === 0 ? (
                             <div className="glass p-8 rounded-2xl text-center text-[var(--color-text-secondary)]">
@@ -177,12 +208,14 @@ export default function ProfilePage() {
                         ) : posts.length === 0 ? (
                             <div className="glass p-12 rounded-2xl text-center">
                                 <p className="text-[var(--color-text-secondary)] mb-4">No posts yet</p>
-                                <button
-                                    onClick={() => router.push('/feed')}
-                                    className="px-6 py-3 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-xl font-medium transition-all"
-                                >
-                                    Create your first post
-                                </button>
+                                {isOwnProfile && (
+                                    <button
+                                        onClick={() => router.push('/feed')}
+                                        className="px-6 py-3 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-xl font-medium transition-all"
+                                    >
+                                        Create your first post
+                                    </button>
+                                )}
                             </div>
                         ) : (
                             posts.map((post) => <PostCard key={post.id} post={post} />)
@@ -190,6 +223,6 @@ export default function ProfilePage() {
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
     );
 }

@@ -3,8 +3,9 @@ namespace Sonixy.PostService.Application.DTOs;
 public record PostDto(
     string Id,
     string AuthorId,
-    string AuthorName,
+    string AuthorDisplayName,
     string AuthorAvatarUrl,
+    string AuthorUsername,
     string Content,
     string Visibility,
     int LikeCount,

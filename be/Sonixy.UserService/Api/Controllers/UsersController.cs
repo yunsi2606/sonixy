@@ -24,6 +24,14 @@ public class UsersController(IUserService userService, ILogger<UsersController> 
         return Ok(new PresignedUrlResponseDto(uploadUrl, objectKey, publicUrl));
     }
 
+    [HttpGet("check-username")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    public async Task<IActionResult> CheckUsername([FromQuery] string username)
+    {
+        var available = await userService.IsUsernameAvailableAsync(username);
+        return Ok(new { available });
+    }
+
     /// <summary>
     /// Creates a new user profile
     /// </summary>
@@ -72,8 +80,15 @@ public class UsersController(IUserService userService, ILogger<UsersController> 
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetUser(string id)
     {
+        // Try by ID first
         var user = await userService.GetUserByIdAsync(id);
         
+        // If not found by ID, try by Username
+        if (user is null)
+        {
+            user = await userService.GetUserByUsernameAsync(id);
+        }
+
         if (user is null)
             return NotFound(new { error = "User not found" });
 

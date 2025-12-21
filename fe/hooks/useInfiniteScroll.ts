@@ -5,9 +5,11 @@ import { useState, useEffect, useCallback } from 'react';
 interface InfiniteScrollOptions<T> {
     fetchFunction: (cursor?: string) => Promise<{ items: T[]; nextCursor: string | null; hasMore: boolean }>;
     pageSize?: number;
+    enabled?: boolean;
+    dependencies?: any[];
 }
 
-export function useInfiniteScroll<T>({ fetchFunction, pageSize = 20 }: InfiniteScrollOptions<T>) {
+export function useInfiniteScroll<T>({ fetchFunction, pageSize = 20, enabled = true, dependencies = [] }: InfiniteScrollOptions<T>) {
     const [items, setItems] = useState<T[]>([]);
     const [cursor, setCursor] = useState<string | null>(null);
     const [hasMore, setHasMore] = useState(true);
@@ -15,7 +17,7 @@ export function useInfiniteScroll<T>({ fetchFunction, pageSize = 20 }: InfiniteS
     const [error, setError] = useState<string | null>(null);
 
     const loadMore = useCallback(async () => {
-        if (isLoading || !hasMore) return;
+        if (isLoading || !hasMore || !enabled) return;
 
         setIsLoading(true);
         setError(null);
@@ -30,7 +32,7 @@ export function useInfiniteScroll<T>({ fetchFunction, pageSize = 20 }: InfiniteS
         } finally {
             setIsLoading(false);
         }
-    }, [cursor, hasMore, isLoading, fetchFunction]);
+    }, [cursor, hasMore, isLoading, enabled, fetchFunction]);
 
     const refresh = useCallback(async () => {
         setItems([]);
@@ -38,6 +40,8 @@ export function useInfiniteScroll<T>({ fetchFunction, pageSize = 20 }: InfiniteS
         setHasMore(true);
         setIsLoading(true);
         setError(null);
+
+        if (!enabled) return;
 
         try {
             const result = await fetchFunction(undefined);
@@ -49,13 +53,13 @@ export function useInfiniteScroll<T>({ fetchFunction, pageSize = 20 }: InfiniteS
         } finally {
             setIsLoading(false);
         }
-    }, [fetchFunction]);
+    }, [fetchFunction, enabled]);
 
-    // Load initial data
+    // Initial load and re-fetch on dependencies change
     useEffect(() => {
-        loadMore();
+        refresh();
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [enabled, ...dependencies]);
 
     return {
         items,

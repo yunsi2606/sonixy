@@ -6,6 +6,7 @@ public record UserDto(
     string? LastName,
     string DisplayName,
     string Email,
+    string Username,
     string Bio,
     string AvatarUrl,
     DateTime CreatedAt
