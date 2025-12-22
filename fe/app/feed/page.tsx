@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { PostCard } from '@/components/feed/PostCard';
+import { PostCard } from '@/components/common/PostCard';
 import { CreatePostModal } from '@/components/feed/CreatePostModal';
 import { postService } from '@/services/post.service';
 import type { Post } from '@/types/api';
