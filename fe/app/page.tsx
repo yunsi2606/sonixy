@@ -1,6 +1,6 @@
 export default function Home() {
   return (
-    <main className="relative z-10 w-full overflow-hidden">
+    <main className="relative z-10 w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         {/* Hero Section */}
         <section className="text-center mb-32 animate-[var(--animate-fade-up)]">

@@ -35,7 +35,7 @@ export const GlassShell: React.FC<GlassShellProps> = ({ children }) => {
             {/* Layout Container */}
             {isSocialPage ? (
                 // 3-Column Social Layout
-                <div className="relative z-10 h-full flex flex-col lg:grid lg:grid-cols-[260px_1fr] xl:grid-cols-[280px_1fr_350px]">
+                <div className="relative z-10 h-full flex flex-col lg:grid lg:grid-cols-[260px_1fr] xl:grid-cols-[280px_1fr_350px] lg:grid-rows-[1fr]">
 
                     {/* Mobile Header (Only visible LG screen down) */}
                     <header className="flex-none lg:hidden glass-base border-b border-[var(--glass-border)] h-16 flex items-center justify-between px-4 z-50">
@@ -61,7 +61,7 @@ export const GlassShell: React.FC<GlassShellProps> = ({ children }) => {
                     </aside>
 
                     {/* Center Feed (Scrollable Zone) */}
-                    <main className="flex-1 h-full overflow-y-auto scroll-smooth">
+                    <main className="flex-1 h-full overflow-y-auto scroll-smooth min-h-0">
                         <div className="max-w-[720px] mx-auto w-full px-4 pt-6 pb-24 lg:pb-10">
                             {children}
                         </div>
