@@ -1,3 +1,5 @@
+using MassTransit;
+using Sonixy.Shared.Events;
 using Microsoft.Extensions.Options;
 using Sonixy.IdentityService.Application.DTOs;
 using Sonixy.IdentityService.Domain.Entities;
@@ -10,9 +12,11 @@ namespace Sonixy.IdentityService.Application.Services;
 public class AuthService(
     IAccountRepository accountRepository,
     IRefreshTokenRepository refreshTokenRepository,
+    IEmailVerificationTokenRepository emailVerificationTokenRepository,
     IPasswordHasher passwordHasher,
     ITokenService tokenService,
     UserService.UserServiceClient userServiceClient,
+    IPublishEndpoint publishEndpoint,
     IOptions<JwtSettings> jwtSettings) : IAuthService
 {
     private readonly JwtSettings _jwtSettings = jwtSettings.Value;
@@ -50,10 +54,33 @@ public class AuthService(
         }
         catch (Exception ex)
         {
+            // Log error but continue? Or revert? 
+            // Ideally revert account creation, but keeping simple for now as per previous code
             throw new InvalidOperationException($"Account created but failed to create user profile: {ex.Message}", ex);
         }
 
-        // Generate tokens
+        // Generate Verification Token
+        var tokenString = Guid.NewGuid().ToString();
+        var expiresAt = DateTime.UtcNow.AddHours(24);
+
+        var verificationToken = new EmailVerificationToken
+        {
+            AccountId = account.Id,
+            Token = tokenString,
+            ExpiresAt = expiresAt
+        };
+
+        await emailVerificationTokenRepository.AddAsync(verificationToken, cancellationToken);
+
+        // Publish Event
+        await publishEndpoint.Publish(new EmailVerificationRequestedEvent(
+            account.Id.ToString(),
+            account.Email,
+            tokenString,
+            expiresAt
+        ), cancellationToken);
+
+        // Generate tokens (User is logged in but Unverified)
         return await GenerateAuthResponseAsync(account, cancellationToken);
     }
 
@@ -135,6 +162,47 @@ public class AuthService(
         return Task.FromResult(principal is not null);
     }
 
+    public async Task VerifyEmailAsync(string token, CancellationToken cancellationToken = default)
+    {
+        var verificationToken = await emailVerificationTokenRepository.GetByTokenAsync(token, cancellationToken);
+
+        if (verificationToken == null)
+        {
+            throw new InvalidOperationException("Invalid verification token");
+        }
+
+        if (verificationToken.UsedAt.HasValue)
+        {
+            throw new InvalidOperationException("Token already used");
+        }
+
+        if (verificationToken.ExpiresAt < DateTime.UtcNow)
+        {
+            throw new InvalidOperationException("Token expired");
+        }
+
+        var account = await accountRepository.GetByIdAsync(verificationToken.AccountId, cancellationToken);
+        if (account == null)
+        {
+            throw new InvalidOperationException("Account not found");
+        }
+
+        // Mark available
+        account.IsEmailVerified = true;
+        await accountRepository.UpdateAsync(account, cancellationToken);
+
+        // Mark used
+        verificationToken.UsedAt = DateTime.UtcNow;
+        await emailVerificationTokenRepository.UpdateAsync(verificationToken, cancellationToken);
+
+        // Publish Event
+        await publishEndpoint.Publish(new EmailVerifiedEvent(
+            account.Id.ToString(),
+            account.Email,
+            DateTime.UtcNow
+        ), cancellationToken);
+    }
+
     private async Task<AuthResponseDto> GenerateAuthResponseAsync(Account account, CancellationToken cancellationToken)
     {
         var userId = account.Id.ToString();
@@ -161,7 +229,8 @@ public class AuthService(
             accessToken,
             refreshTokenString,
             DateTime.UtcNow.AddMinutes(_jwtSettings.AccessTokenExpirationMinutes),
-            userId
+            userId,
+            account.IsEmailVerified
         );
     }
 }

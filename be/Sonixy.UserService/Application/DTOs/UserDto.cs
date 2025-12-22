@@ -9,5 +9,6 @@ public record UserDto(
     string Username,
     string Bio,
     string AvatarUrl,
-    DateTime CreatedAt
+    DateTime CreatedAt,
+    bool IsEmailVerified
 );

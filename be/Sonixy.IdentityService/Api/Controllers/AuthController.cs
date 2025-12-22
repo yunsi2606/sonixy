@@ -144,6 +144,28 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
     /// <summary>
+    /// Verify email with token
+    /// </summary>
+    /// <param name="token">Verification token</param>
+    /// <returns>Success message</returns>
+    [HttpPost("verify-email")]
+    [Microsoft.AspNetCore.RateLimiting.EnableRateLimiting("verify-email")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> VerifyEmail([FromQuery] string token)
+    {
+        try
+        {
+            await authService.VerifyEmailAsync(token);
+            return Ok(new { message = "Email verified successfully" });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { error = ex.Message });
+        }
+    }
+
+    /// <summary>
     /// Validate access token
     /// </summary>
     /// <remarks>

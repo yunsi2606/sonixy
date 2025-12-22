@@ -126,7 +126,8 @@ public class UserService(IUserRepository userRepository, IMediaStorage mediaStor
         user.Username,
         user.Bio,
         user.AvatarUrl,
-        user.CreatedAt
+        user.CreatedAt,
+        user.IsEmailVerified
     );
 }
 

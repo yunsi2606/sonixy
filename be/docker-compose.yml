@@ -24,6 +24,48 @@ services:
       timeout: 5s
       retries: 5
 
+  # RabbitMQ (Message Broker)
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: sonixy-rabbitmq
+    restart: always
+    ports:
+      - "5673:5672" # AMQP
+      - "15673:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+    networks:
+      - sonixy-network
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+  # Email Service
+  email-service:
+    build:
+      context: .
+      dockerfile: Sonixy.EmailService/Dockerfile
+    container_name: sonixy-email
+    restart: always
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=${RABBITMQ_USER:-guest}
+      - RabbitMQ__Password=${RABBITMQ_PASS:-guest}
+      - Smtp__Host=${SMTP_HOST}
+      - Smtp__Port=${SMTP_PORT}
+      - Smtp__Username=${SMTP_USERNAME}
+      - Smtp__Password=${SMTP_PASSWORD}
+      - FrontendUrl=https://sonixy.nhatcuong.io.vn
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - sonixy-network
+
   # Identity Service
   identity-service:
     build:

@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Security.Claims;
 using System.Text;
+using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
@@ -13,6 +14,7 @@ using Sonixy.UserService.Domain.Repositories;
 using Sonixy.UserService.Infrastructure.Repositories;
 
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Sonixy.UserService.Consumers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,6 +59,26 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 // MinIO
 builder.Services.AddSharedMinio(builder.Configuration);
+
+// MassTransit
+builder.Services.AddMassTransit(x =>
+{
+    x.AddConsumer<EmailVerifiedConsumer>();
+
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("rabbitmq", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+
+        cfg.ReceiveEndpoint("user-service-email-verified", e =>
+        {
+            e.ConfigureConsumer<EmailVerifiedConsumer>(context);
+        });
+    });
+});
 
 // Controllers
 builder.Services.AddControllers();

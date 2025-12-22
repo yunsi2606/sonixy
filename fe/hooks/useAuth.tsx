@@ -56,9 +56,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!isLoading && user) {
             // Check if user needs onboarding
             const isNameMissing = !user.firstName || !user.lastName;
+
             // Avoid redirect loop
-            if (isNameMissing && pathname !== '/onboarding' && pathname !== '/login' && pathname !== '/register') {
-                router.push('/onboarding');
+            const publicPaths = ['/login', '/register', '/verify-email', '/verify-email-required'];
+
+            if (pathname && !publicPaths.includes(pathname)) {
+                if (isNameMissing && pathname !== '/onboarding') {
+                    router.push('/onboarding');
+                }
+
+                if (user.isEmailVerified === false) {
+                    router.push('/verify-email?status=pending&email=' + encodeURIComponent(user.email));
+                }
             }
         }
     }, [user, isLoading, pathname, router]);

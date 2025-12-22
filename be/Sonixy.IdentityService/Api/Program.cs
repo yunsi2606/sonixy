@@ -9,6 +9,7 @@ using Sonixy.IdentityService.Application.Services;
 using Sonixy.IdentityService.Domain.Repositories;
 using Sonixy.IdentityService.Infrastructure.Repositories;
 using Sonixy.Shared.Configuration;
+using MassTransit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -61,9 +62,24 @@ builder.Services.AddAuthorization();
 // Repository & Service Registration
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IEmailVerificationTokenRepository, EmailVerificationTokenRepository>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+// MassTransit Configuration
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("rabbitmq", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
+    });
+});
+
 
 // Controllers
 builder.Services.AddControllers();

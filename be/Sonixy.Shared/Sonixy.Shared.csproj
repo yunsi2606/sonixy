@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.7" />
     <PackageReference Include="Minio" Version="7.0.0" />
     <PackageReference Include="MongoDB.Driver" Version="3.2.0" />
     <PackageReference Include="Grpc.Tools" Version="2.70.0" PrivateAssets="All" />

@@ -70,6 +70,10 @@ export default function RegisterPage() {
     }, [username]);
 
 
+    const [success, setSuccess] = useState(false);
+
+    // ... (existing username check logic)
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
@@ -88,13 +92,35 @@ export default function RegisterPage() {
 
         try {
             await register({ email, username, password });
-            router.push('/feed');
+            setSuccess(true);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Registration failed');
         } finally {
             setIsLoading(false);
         }
     };
+
+    if (success) {
+        return (
+            <main className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center p-4">
+                <div className="w-full max-w-md text-center animate-fade-in">
+                    <div className="glass p-8 rounded-2xl">
+                        <h1 className="text-3xl font-bold mb-4">Check your email</h1>
+                        <p className="text-[var(--color-text-secondary)] mb-6">
+                            We've sent a verification link to <strong>{email}</strong>.
+                            Please check your inbox and click the link to verify your account.
+                        </p>
+                        <Link
+                            href="/login"
+                            className="inline-block px-6 py-3 bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)] text-white rounded-xl font-medium transition-all"
+                        >
+                            Back to Login
+                        </Link>
+                    </div>
+                </div>
+            </main>
+        );
+    }
 
     return (
         <main className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center p-4">
@@ -108,6 +134,8 @@ export default function RegisterPage() {
 
                 <form
                     onSubmit={handleSubmit}
+                    // ... (rest of form)
+
                     className="glass p-8 rounded-2xl space-y-6 animate-fade-in"
                     style={{ animationDelay: '0.1s' }}
                 >

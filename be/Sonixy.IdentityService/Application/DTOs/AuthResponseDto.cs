@@ -4,5 +4,6 @@ public record AuthResponseDto(
     string AccessToken,
     string RefreshToken,
     DateTime ExpiresAt,
-    string UserId
+    string UserId,
+    bool IsEmailVerified
 );

@@ -3,6 +3,7 @@ export interface AuthResponse {
     refreshToken: string;
     expiresAt: string;
     userId: string;
+    isEmailVerified: boolean;
 }
 
 export interface RegisterDto {
@@ -26,6 +27,7 @@ export interface User {
     bio: string;
     avatarUrl: string;
     createdAt: string;
+    isEmailVerified?: boolean;
 }
 
 export interface Post {
