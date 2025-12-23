@@ -19,28 +19,28 @@ A production-ready microservice-based social web application demonstrating clean
 ### Microservices
 ```
 ┌─────────────┐
-│   Gateway   │  → Ocelot API Gateway (planned)
+│   Gateway   │  → Ocelot API Gateway (Port 7200)
 └─────────────┘
       ↓
-┌──────────────────────────────────────────┐
-│  IdentityService  │  UserService         │
-│  PostService      │  SocialGraphService  │
-└──────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────┐
+│  IdentityService  │  UserService  │  PostService       │
+│  SocialGraphService │ AnalyticsService │ FeedService   │
+└────────────────────────────────────────────────────────┘
       ↓
-┌──────────────────────────────────────────┐
-│           MongoDB Collections            │
-└──────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────┐
+│   MongoDB Cluster  │   Redis Cache   │    RabbitMQ     │
+└────────────────────────────────────────────────────────┘
 ```
 
 ### Tech Stack
 
 **Backend**
 - .NET 10 + ASP.NET Core Web API
-- MongoDB with ObjectId
-- gRPC for inter-service communication (planned)
-- Swagger/OpenAPI documentation
-- Repository + Specification patterns
-- Cursor-based pagination
+- **Data**: MongoDB (Time Series & Document), Redis (Sorted Sets), MinIO (Object Storage)
+- **Messaging**: RabbitMQ (MassTransit)
+- **Gateway**: Ocelot
+- **Docs**: Swagger/OpenAPI
+- **Patterns**: repository, Specification, Event-Driven Architecture (EDA)
 
 **Frontend**
 - Next.js 15 (App Router)
@@ -76,6 +76,15 @@ cd be/Sonixy.SocialGraphService/Api
 dotnet restore
 dotnet run
 # Swagger: http://localhost:5002
+# AnalyticsService
+cd be/Sonixy.AnalyticsService
+dotnet run
+# Swagger: http://localhost:8092
+
+# FeedService
+cd be/Sonixy.FeedService
+dotnet run
+# Swagger: http://localhost:8093
 ```
 
 ### Frontend
@@ -92,129 +101,18 @@ npm run dev
 ```
 sonixy/
 ├── be/
-│   ├── Sonixy.Shared/              # Common patterns & utilities
-│   │   ├── Common/                 # Entity, Repository
-│   │   ├── Specifications/         # ISpecification
-│   │   └── Pagination/             # Cursor pagination
-│   │
-│   ├── Sonixy.UserService/         # User profile management
-│   │   ├── Api/                    # Controllers, Program.cs
-│   │   ├── Application/            # DTOs, Services
-│   │   ├── Domain/                 # Entities, Repositories
-│   │   └── Infrastructure/         # Data access
-│   │
-│   ├── Sonixy.PostService/         # Content & feeds
-│   │   ├── Api/
-│   │   ├── Application/
-│   │   ├── Domain/
-│   │   └── Infrastructure/
-│   │
-│   └── Sonixy.SocialGraphService/  # Follow & Like
-│       ├── Api/
-│       ├── Application/
-│       ├── Domain/
-│       └── Infrastructure/
+│   ├── Sonixy.Shared/              # Events, DTOs, Common patterns
+│   ├── Sonixy.AnalyticsService/    # User Behavior Logging (MongoDB/RabbitMQ)
+│   ├── Sonixy.FeedService/         # Intelligent Feed (Redis/RabbitMQ)
+│   ├── Sonixy.Gateway/             # Ocelot API Gateway
+│   ├── Sonixy.UserService/         # User Profiles
+│   ├── Sonixy.PostService/         # Content
+│   └── Sonixy.SocialGraphService/  # Social Graph
 │
 └── fe/
-    ├── app/                        # Next.js app directory
-    │   ├── globals.css             # Design system
-    │   ├── layout.tsx              # Root layout
-    │   └── page.tsx                # Landing page
-    ├── components/                 # (To be added)
-    ├── services/                   # API clients
-    └── types/                      # TypeScript definitions
 ```
 
-## 🎨 Design System
-
-### Color Palette
-```css
-Primary:        #7C7CFF
-Secondary:      #00E5FF
-Background:     #0B0D17
-Surface:        rgba(255, 255, 255, 0.06)
-Text:           #EDEDED
-```
-
-### Features
-- **Glassmorphism** - Frosted glass effects
-- **Smooth animations** - Micro-interactions
-- **Dark mode first** - Premium aesthetic
-- **Responsive** - Mobile-first design
-
-## 📊 Key Features Implemented
-
-### Backend
-- ✅ Layered architecture (Api/Application/Domain/Infrastructure)
-- ✅ Repository + Specification patterns
-- ✅ Cursor-based pagination for feeds
-- ✅ MongoDB with proper indexes
-- ✅ Comprehensive Swagger documentation
-- ✅ DTOs with manual mapping
-- ✅ Async/await throughout
-
-### Frontend
-- ✅ Next.js 15 with App Router
-- ✅ Tailwind CSS v4 design system
-- ✅ SEO metadata
-- ✅ Premium landing page
-- ✅ Glassmorphic UI components
-
-## 🗄️ Database Schema
-
-**Collections:**
-- `users` - User profiles
-- `posts` - Post content with denormalized like counts
-- `follows` - Follow relationships
-- `likes` - Post likes
-
-All collections use MongoDB ObjectId and have optimized indexes for common queries.
-
-## 📖 API Documentation
-
-Each microservice exposes Swagger UI:
-
-### UserService
-- `GET /api/users/{id}` - Get user profile
-- `POST /api/users` - Create user
-- `PATCH /api/users/{id}` - Update user
-- `POST /api/users/batch` - Batch get users
-
-### PostService
-- `GET /api/posts/{id}` - Get post
-- `POST /api/posts` - Create post
-- `GET /api/posts/feed` - Get public feed (cursor paginated)
-- `GET /api/posts/user/{userId}` - Get user's posts
-
-### SocialGraphService
-- `POST /api/follows/{followingId}` - Follow user
-- `DELETE /api/follows/{followingId}` - Unfollow user
-- `POST /api/likes/{postId}` - Like post
-- `DELETE /api/likes/{postId}` - Unlike post
-- `GET /api/likes/{postId}/count` - Get like count
-
-## 🧪 Design Patterns
-
-### 1. Repository Pattern
-Abstraction over data access with MongoDB-specific implementation.
-
-### 2. Specification Pattern
-Encapsulates query logic for reusable, composable filters.
-
-### 3. Cursor Pagination
-Stable pagination that handles real-time data inserts gracefully.
-
-### 4. DTO Pattern
-Decouples API contracts from domain models with explicit mapping.
-
-### 5. Layered Architecture
-Clear separation: Api → Application → Domain → Infrastructure
-
-## 🎓 Learning Resources
-
-For detailed implementation walkthrough, see:
-- [Implementation Plan](./.artifacts/implementation_plan.md)
-- [Walkthrough](./.artifacts/walkthrough.md)
+...
 
 ## 🔮 Roadmap
 
@@ -224,28 +122,16 @@ For detailed implementation walkthrough, see:
 - [x] Cursor pagination
 - [x] Frontend with design system
 
-### Phase 2: Authentication & gRPC
-- [ ] IdentityService with JWT
-- [ ] gRPC inter-service communication
-- [ ] API Gateway (Ocelot)
+### Phase 2: V3 Architecture & Event-Driven ✅
+- [x] Analytics Service (Mongo TimeSeries)
+- [x] Feed Service (Redis Hybrid Fan-out)
+- [x] RabbitMQ Integration (MassTransit)
+- [x] API Gateway (Ocelot)
 
-### Phase 3: Full Frontend
-- [ ] Authentication pages
-- [ ] Feed with infinite scroll
-- [ ] Profile pages
-- [ ] Post creation UI
-
-### Phase 4: Advanced Features
+### Phase 3: Advanced Features
 - [ ] Real-time updates (SignalR)
-- [ ] Image uploads
-- [ ] Comments
-- [ ] Notifications
-
-### Phase 5: Production
-- [ ] Redis caching
-- [ ] Rate limiting
-- [ ] Docker compose
-- [ ] Kubernetes deployment
+- [ ] Kubernetes deployment (Helm Charts)
+- [ ] Recommendation Engine (ML.NET)
 
 ## 🤝 Contributing
 

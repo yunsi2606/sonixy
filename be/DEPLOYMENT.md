@@ -77,21 +77,21 @@ docker-compose down -v  # ⚠️ WARNING: Deletes all database data!
 │  │   MongoDB   │ :27017                         │
 │  └──────┬──────┘                                │
 │         │                                       │
-│  ┌──────┴───────┬──────────┬──────────┐        │
-│  │              │          │          │        │
-│  ▼              ▼          ▼          ▼        │
-│ ┌────┐      ┌────┐    ┌────┐    ┌────┐        │
-│ │ID  │:5000 │User│    │Post│    │Soc │        │
-│ │Svc │      │Svc │    │Svc │    │Svc │        │
-│ └──┬─┘      └──┬─┘    └──┬─┘    └──┬─┘        │
-│    │           │         │         │          │
-│    └───────────┴─────────┴─────────┘          │
-│                │                               │
-│         ┌──────▼──────┐                        │
-│         │   Gateway   │ :5050                  │
-│         └─────────────┘                        │
-│                                                │
-└─────────────────────────────────────────────────┘
+│  ┌──────┴───────┬──────────┬──────────┬──────────┬──────────┐ │
+│  │              │          │          │          │          │ │
+│  ▼              ▼          ▼          ▼          ▼          ▼ │
+│ ┌────┐      ┌────┐    ┌────┐    ┌────┐    ┌────┐    ┌────┐    │
+│ │ID  │:5000 │User│    │Post│    │Soc │    │Ana │    │Feed│    │
+│ │Svc │      │Svc │    │Svc │    │Svc │    │Svc │    │Svc │    │
+│ └──┬─┘      └──┬─┘    └──┬─┘    └──┬─┘    └──┬─┘    └──┬─┘    │
+│    │           │         │         │          │          │      │
+│    └───────────┴─────────┴─────────┴──────────┴──────────┘      │
+│                │                                                │
+│         ┌──────▼──────┐                                         │
+│         │   Gateway   │ :7200                                   │
+│         └─────────────┘                                         │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
               │
               ▼
      (External Access)
@@ -110,7 +110,13 @@ docker-compose down -v  # ⚠️ WARNING: Deletes all database data!
 | User | 8089 | 5009 | http://localhost:5009 |
 | Post | 8090 | 5010 | http://localhost:5010 |
 | Social | 8091 | 5011 | http://localhost:5011 |
+| Analytics | 8092 | 5012 | http://localhost:5012 |
+| Feed | 8093 | 5013 | http://localhost:5013 |
 | MongoDB | 27017 | 27017 | mongodb://localhost:27017 |
+| Redis | 6379 | 6379 | redis://localhost:6379 |
+| RabbitMQ | 5672/15672 | 5673/15673 | http://localhost:15673 |
+| MinIO (API) | 9000 | 9100 | http://localhost:9100 |
+| MinIO (Console) | 9001 | 9102 | http://localhost:9102 |
 | Cloudflared | N/A | N/A | (Tunnel - no exposed ports) |
 
 ### Environment Variables
@@ -136,6 +142,8 @@ Each service has Swagger UI:
 - **User**: http://localhost:5009 - User profiles
 - **Post**: http://localhost:5010 - Posts, feed
 - **Social**: http://localhost:5011 - Follow, likes
+- **Analytics**: http://localhost:5012 - Event Logging
+- **Feed**: http://localhost:5013 - Personalized Timeline
 - **Gateway**: http://localhost:5100 - Main API endpoint
 
 ---
@@ -367,7 +375,7 @@ services:
 
 ```powershell
 # 1. Test Gateway health
-curl http://localhost:5050/api/identity/auth/validate?token=test
+curl http://localhost:5100/api/identity/auth/validate?token=test
 
 # 2. Test MongoDB connection
 docker-compose exec mongodb mongosh -u admin -p $env:MONGO_PASSWORD
