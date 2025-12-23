@@ -7,7 +7,7 @@ namespace Sonixy.FeedService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class FeedController(IConnectionMultiplexer redis, IPostClient postClient) : ControllerBase
+public class FeedController(IConnectionMultiplexer redis) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetFeed([FromQuery] string userId)
@@ -17,24 +17,35 @@ public class FeedController(IConnectionMultiplexer redis, IPostClient postClient
         var db = redis.GetDatabase();
         var key = $"sonixy:feed:timeline:{userId}";
 
-        // 1. Fetch Timeline (Last 50 posts)
+        // Fetch Timeline (Last 50 posts)
         var postIdsRedis = await db.SortedSetRangeByRankAsync(key, 0, 49, Order.Descending);
         var postIds = postIdsRedis.Select(x => x.ToString()).ToList();
 
         if (postIds.Count == 0) return Ok(new List<PostDto>());
 
-        // 2. Hydrate via Post Service
-        var posts = await postClient.GetPostsByIdsAsync(postIds);
-
-        // 3. Re-sort to match Redis order (since PostService might return unordered or different order)
-        var postMap = posts.ToDictionary(p => p.Id, p => p);
+        // Fetch Post Data from Redis Cache (Materialized View)
         var orderedPosts = new List<PostDto>();
+        var batch = db.CreateBatch();
+        var tasks = new List<Task<RedisValue>>();
 
         foreach (var id in postIds)
         {
-            if (postMap.TryGetValue(id, out var post))
+            var postKey = $"sonixy:feed:post:{id}";
+             tasks.Add(batch.StringGetAsync(postKey));
+        }
+        batch.Execute();
+        
+        var results = await Task.WhenAll(tasks);
+
+        foreach (var result in results)
+        {
+            if (result.HasValue)
             {
-                orderedPosts.Add(post);
+                var post = System.Text.Json.JsonSerializer.Deserialize<PostDto>(result.ToString());
+                if (post != null)
+                {
+                    orderedPosts.Add(post);
+                }
             }
         }
 

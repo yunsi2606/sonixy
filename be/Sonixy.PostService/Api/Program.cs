@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using MongoDB.Driver;
+using Sonixy.PostService.Api.Services;
 using Sonixy.PostService.Application.Services;
 using Sonixy.PostService.Domain.Repositories;
 using Sonixy.PostService.Infrastructure.Repositories;
@@ -11,8 +12,25 @@ using Sonixy.PostService.Application.Interfaces;
 using Sonixy.Shared.Configuration;
 using Sonixy.Shared.Extensions;
 using MassTransit;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Kestrel for gRPC (HTTP/2) and REST (HTTP/1.1)
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // REST API - HTTP/1.1
+    options.ListenAnyIP(8090, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http1;
+    });
+
+    // gRPC - HTTP/2
+    options.ListenAnyIP(8190, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http2;
+    });
+});
 
 // MongoDB Configuration
 builder.Services.Configure<MongoDbSettings>(
@@ -188,5 +206,6 @@ app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapGrpcService<PostGrpcService>();
 
 app.Run();

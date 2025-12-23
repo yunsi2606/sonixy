@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option csharp_namespace = "Sonixy.Shared.Protos";
+
+package post;
+
+service PostService {
+  rpc GetPostsByIds (GetPostsByIdsRequest) returns (PostListResponse);
+}
+
+message GetPostsByIdsRequest {
+  repeated string post_ids = 1;
+}
+
+message PostListResponse {
+  repeated PostResponse posts = 1;
+}
+
+message PostResponse {
+  string id = 1;
+  string author_id = 2;
+  string content = 3;
+  repeated string image_urls = 4;
+  string video_url = 5;
+  google.protobuf.Timestamp created_at = 6;
+  string author_display_name = 7;
+  string author_username = 8;
+  string author_avatar_url = 9;
+  int64 like_count = 10;
+  bool is_liked = 11;
+  repeated MediaItemResponse media = 12;
+}
+
+message MediaItemResponse {
+    string type = 1;
+    string url = 2;
+}

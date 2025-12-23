@@ -34,11 +34,13 @@ builder.Services.AddScoped<IMongoDatabase>(sp =>
 });
 
 // Service Clients
-builder.Services.AddHttpClient<IPostClient, PostClient>(client =>
+builder.Services.AddGrpcClient<Sonixy.Shared.Protos.PostService.PostServiceClient>(o =>
 {
-    var postServiceUrl = builder.Configuration["Services:PostService"] ?? "http://post-service:8080";
-    client.BaseAddress = new Uri(postServiceUrl);
+    o.Address = new Uri("http://post-service:8190");
 });
+
+// Register Wrapper
+builder.Services.AddScoped<IPostClient, PostClient>();
 
 // MassTransit (RabbitMQ)
 builder.Services.AddMassTransit(x =>
