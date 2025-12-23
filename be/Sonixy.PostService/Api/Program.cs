@@ -97,6 +97,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Authorization
 builder.Services.AddAuthorization();
 
+// gRPC
+builder.Services.AddGrpc();
+
 // Controllers
 builder.Services.AddControllers();
 
