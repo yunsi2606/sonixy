@@ -10,6 +10,7 @@ using Sonixy.PostService.Infrastructure.Repositories;
 using Sonixy.PostService.Application.Interfaces;
 using Sonixy.Shared.Configuration;
 using Sonixy.Shared.Extensions;
+using MassTransit;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -145,6 +146,25 @@ builder.Services.AddCors(options =>
         policy.WithOrigins(origins)
               .AllowAnyMethod()
               .AllowAnyHeader();
+    });
+});
+
+// MassTransit (RabbitMQ)
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        var host = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+        var user = builder.Configuration["RabbitMQ:Username"] ?? "guest";
+        var pass = builder.Configuration["RabbitMQ:Password"] ?? "guest";
+
+        cfg.Host(host, "/", h =>
+        {
+            h.Username(user);
+            h.Password(pass);
+        });
+
+        cfg.ConfigureEndpoints(context);
     });
 });
 

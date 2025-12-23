@@ -179,6 +179,59 @@ services:
     networks:
       - sonixy-network
 
+  # Analytics Service
+  analytics-service:
+    build:
+      context: .
+      dockerfile: Sonixy.AnalyticsService/Dockerfile
+    container_name: sonixy-analytics
+    restart: always
+    ports:
+      - "5012:8092"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8092
+      - CORS__AllowOrigins=https://sonixy.nhatcuong.io.vn
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=${RABBITMQ_USER:-guest}
+      - RabbitMQ__Password=${RABBITMQ_PASS:-guest}
+      - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
+      - MongoDB__DatabaseName=sonixy_analytics
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    networks:
+      - sonixy-network
+
+  # Feed Service
+  feed-service:
+    build:
+      context: .
+      dockerfile: Sonixy.FeedService/Dockerfile
+    container_name: sonixy-feed
+    restart: always
+    ports:
+      - "5013:8093"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8093
+      - CORS__AllowOrigins=https://sonixy.nhatcuong.io.vn
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=${RABBITMQ_USER:-guest}
+      - RabbitMQ__Password=${RABBITMQ_PASS:-guest}
+      - Redis__ConnectionString=redis:6379
+      - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
+      - MongoDB__DatabaseName=sonixy_feed
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - sonixy-network
+
   # API Gateway
   gateway:
     build:
@@ -241,6 +294,26 @@ services:
     cpus: 0.25
     restart: unless-stopped
     # No ports exposed - tunnel handles everything
+
+    # Redis
+  redis:
+    image: redis:alpine
+    container_name: sonixy-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    command: redis-server --save 60 1 --loglevel warning --maxmemory 512mb --maxmemory-policy allkeys-lru
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    networks:
+      - sonixy-network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   sonixy-network:

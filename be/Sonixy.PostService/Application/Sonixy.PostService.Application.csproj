@@ -11,4 +11,8 @@
     <ProjectReference Include="..\..\Sonixy.Shared\Sonixy.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MassTransit" Version="8.5.7" />
+  </ItemGroup>
+
 </Project>

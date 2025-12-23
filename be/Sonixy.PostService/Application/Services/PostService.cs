@@ -8,12 +8,16 @@ using Sonixy.Shared.Configuration;
 using Sonixy.Shared.Pagination;
 using Sonixy.PostService.Application.Interfaces;
 
+using MassTransit;
+using Sonixy.Shared.Events;
+
 namespace Sonixy.PostService.Application.Services;
 
 public class PostService(
     IPostRepository postRepository,
     IMediaStorage mediaStorage,
     IUserClient userClient,
+    IPublishEndpoint publishEndpoint,
     IOptions<MinioOptions> minioOptions) : IPostService
 {
     private readonly MinioOptions _minioOptions = minioOptions.Value;
@@ -49,6 +53,17 @@ public class PostService(
         };
 
         await postRepository.AddAsync(post, cancellationToken);
+
+        // Publish Event for Feed Service (Fan-out)
+        var imageUrls = mediaItems.Select(m => $"{_minioOptions.PublicUrl}/{_minioOptions.Bucket}/{m.ObjectKey}").ToList();
+        
+        await publishEndpoint.Publish(new PostCreatedEvent(
+            post.Id.ToString(),
+            post.AuthorId.ToString(),
+            post.Content,
+            imageUrls,
+            post.CreatedAt
+        ), cancellationToken);
 
         // Fetch author details for the single created post
         var author = await userClient.GetUserAsync(authorId, cancellationToken);

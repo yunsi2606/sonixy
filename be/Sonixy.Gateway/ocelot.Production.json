@@ -108,6 +108,42 @@
                 "PeriodTimespan": 60,
                 "Limit": 200
             }
+        },
+        {
+            "DownstreamPathTemplate": "/api/analytics/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "analytics-service",
+                    "Port": 8092
+                }
+            ],
+            "UpstreamPathTemplate": "/api/analytics/{everything}",
+            "UpstreamHttpMethod": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
+            ],
+            "Key": "analytics-service"
+        },
+        {
+            "DownstreamPathTemplate": "/api/feed/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "feed-service",
+                    "Port": 8093
+                }
+            ],
+            "UpstreamPathTemplate": "/api/feed/{everything}",
+            "UpstreamHttpMethod": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE"
+            ],
+            "Key": "feed-service"
         }
     ],
     "SwaggerEndPoints": [
@@ -152,6 +188,28 @@
                     "Version": "v1",
                     "Url": "http://social-service:8091/swagger/v1/swagger.json",
                     "RoutePrefix": "social"
+                }
+            ]
+        },
+        {
+            "Key": "analytics-service",
+            "Config": [
+                {
+                    "Name": "Analytics API",
+                    "Version": "v1",
+                    "Url": "http://analytics-service:8092/swagger/v1/swagger.json",
+                    "RoutePrefix": "analytics"
+                }
+            ]
+        },
+        {
+            "Key": "feed-service",
+            "Config": [
+                {
+                    "Name": "Feed API",
+                    "Version": "v1",
+                    "Url": "http://feed-service:8093/swagger/v1/swagger.json",
+                    "RoutePrefix": "feed"
                 }
             ]
         }
