@@ -24,6 +24,27 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
         setIsLightboxOpen(true);
     };
 
+    // Analytics Tracking
+    React.useEffect(() => {
+        // Track view on mount (impression)
+        if (post.id) {
+            import('@/services/analytics.service').then(({ analyticsService }) => {
+                analyticsService.trackView(post.id);
+            });
+        }
+    }, [post.id]);
+
+    const handleShare = () => {
+        import('@/services/analytics.service').then(({ analyticsService, EventType }) => {
+            analyticsService.trackEvent({
+                eventType: EventType.SHARE,
+                targetId: post.id,
+                targetType: 'Post'
+            });
+        });
+        // Logic to open share modal or copy link...
+    };
+
     // --- Variant Styles ---
     const containerClasses = {
         default: "card-social group mb-6 hover:translate-y-[-4px] transition-all duration-300",
@@ -158,12 +179,18 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
                 <ActionButton
                     icon={post.isLiked ? "❤️" : "🤍"}
                     count={post.likeCount}
-                    onClick={() => onLike?.(post.id)}
+                    onClick={() => {
+                        onLike?.(post.id);
+                        // Track Like
+                        import('@/services/analytics.service').then(({ analyticsService }) => {
+                            analyticsService.trackLike(post.id);
+                        });
+                    }}
                     activeColor={post.isLiked ? "text-red-500 scale-110" : "text-pink-500"}
                     isActive={post.isLiked}
                 />
                 <ActionButton icon="💬" count="Comment" onClick={() => onComment?.(post.id)} activeColor="text-[var(--color-primary)]" />
-                <ActionButton icon="📤" count="Share" activeColor="text-[var(--color-secondary)]" className="ml-auto" />
+                <ActionButton icon="📤" count="Share" onClick={handleShare} activeColor="text-[var(--color-secondary)]" className="ml-auto" />
             </div>
 
             {/* Lightbox for viewing media */}

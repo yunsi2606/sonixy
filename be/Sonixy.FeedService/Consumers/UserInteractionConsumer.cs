@@ -4,22 +4,15 @@ using Sonixy.Shared.Events;
 
 namespace Sonixy.FeedService.Consumers;
 
-public class UserInteractionConsumer : IConsumer<UserInteractionEvent>
+public class UserInteractionConsumer(IConnectionMultiplexer redis, ILogger<UserInteractionConsumer> logger)
+    : IConsumer<UserInteractionEvent>
 {
-    private readonly IConnectionMultiplexer _redis;
-    private readonly ILogger<UserInteractionConsumer> _logger;
-    private const double DecayFactor = 0.9; 
-
-    public UserInteractionConsumer(IConnectionMultiplexer redis, ILogger<UserInteractionConsumer> logger)
-    {
-        _redis = redis;
-        _logger = logger;
-    }
+    private const double DecayFactor = 0.9;
 
     public async Task Consume(ConsumeContext<UserInteractionEvent> context)
     {
         var evt = context.Message;
-        var db = _redis.GetDatabase();
+        var db = redis.GetDatabase();
         var key = $"sonixy:interest:{evt.UserId}";
 
         // Simple scoring based on ActionType
@@ -44,6 +37,6 @@ public class UserInteractionConsumer : IConsumer<UserInteractionEvent>
         // Update score with weight
         await db.SortedSetIncrementAsync(key, topic, score);
         
-        _logger.LogInformation("Updated Interest: User {UserId}, Score {Score}", evt.UserId, score);
+        logger.LogInformation("Updated Interest: User {UserId}, Score {Score}", evt.UserId, score);
     }
 }

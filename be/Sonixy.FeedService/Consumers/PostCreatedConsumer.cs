@@ -4,21 +4,13 @@ using Sonixy.Shared.Events;
 
 namespace Sonixy.FeedService.Consumers;
 
-public class PostCreatedConsumer : IConsumer<PostCreatedEvent>
+public class PostCreatedConsumer(IConnectionMultiplexer redis, ILogger<PostCreatedConsumer> logger)
+    : IConsumer<PostCreatedEvent>
 {
-    private readonly IConnectionMultiplexer _redis;
-    private readonly ILogger<PostCreatedConsumer> _logger;
-
-    public PostCreatedConsumer(IConnectionMultiplexer redis, ILogger<PostCreatedConsumer> logger)
-    {
-        _redis = redis;
-        _logger = logger;
-    }
-
     public async Task Consume(ConsumeContext<PostCreatedEvent> context)
     {
         var evt = context.Message;
-        var db = _redis.GetDatabase();
+        var db = redis.GetDatabase();
 
         // 1. Get Followers of evt.AuthorId
         // In V1, we don't have SocialService RPC yet. We will simulate fan-out.
@@ -36,6 +28,6 @@ public class PostCreatedConsumer : IConsumer<PostCreatedEvent>
             await db.SortedSetAddAsync(key, evt.PostId, score);
         }
 
-        _logger.LogInformation("Fanned out Post {PostId} to {Count} followers", evt.PostId, simulationFollowerIds.Count);
+        logger.LogInformation("Fanned out Post {PostId} to {Count} followers", evt.PostId, simulationFollowerIds.Count);
     }
 }
