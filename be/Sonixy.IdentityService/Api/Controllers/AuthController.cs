@@ -10,7 +10,7 @@ namespace Sonixy.IdentityService.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public class AuthController(IAuthService authService) : ControllerBase
+public class AuthController(IAuthService authService, ILogger<AuthController> logger) : ControllerBase
 {
     /// <summary>
     /// Register a new user account
@@ -37,6 +37,7 @@ public class AuthController(IAuthService authService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
+        logger.LogInformation("[AuthController] Register request received for {Email}", dto.Email);
         try
         {
             var response = await authService.RegisterAsync(dto);

@@ -1,4 +1,5 @@
 using MassTransit;
+using Microsoft.Extensions.Logging;
 using Sonixy.Shared.Events;
 using Microsoft.Extensions.Options;
 using Sonixy.IdentityService.Application.DTOs;
@@ -17,15 +18,19 @@ public class AuthService(
     ITokenService tokenService,
     UserService.UserServiceClient userServiceClient,
     IPublishEndpoint publishEndpoint,
+    ILogger<AuthService> logger,
     IOptions<JwtSettings> jwtSettings) : IAuthService
 {
     private readonly JwtSettings _jwtSettings = jwtSettings.Value;
 
     public async Task<AuthResponseDto> RegisterAsync(RegisterDto dto, CancellationToken cancellationToken = default)
     {
+        logger.LogInformation("[AuthService] RegisterAsync called for email: {Email}", dto.Email);
+
         // Check if email already exists
         if (await accountRepository.EmailExistsAsync(dto.Email, cancellationToken))
         {
+            logger.LogWarning("[AuthService] Email already registered: {Email}", dto.Email);
             throw new InvalidOperationException("Email already registered");
         }
 
@@ -54,31 +59,12 @@ public class AuthService(
         }
         catch (Exception ex)
         {
-            // Log error but continue? Or revert? 
-            // Ideally revert account creation, but keeping simple for now as per previous code
+            logger.LogError(ex, "[AuthService] Failed to create user profile for {Email}", dto.Email);
             throw new InvalidOperationException($"Account created but failed to create user profile: {ex.Message}", ex);
         }
 
-        // Generate Verification Token
-        var tokenString = Guid.NewGuid().ToString();
-        var expiresAt = DateTime.UtcNow.AddHours(24);
-
-        var verificationToken = new EmailVerificationToken
-        {
-            AccountId = account.Id,
-            Token = tokenString,
-            ExpiresAt = expiresAt
-        };
-
-        await emailVerificationTokenRepository.AddAsync(verificationToken, cancellationToken);
-
-        // Publish Event
-        await publishEndpoint.Publish(new EmailVerificationRequestedEvent(
-            account.Id.ToString(),
-            account.Email,
-            tokenString,
-            expiresAt
-        ), cancellationToken);
+        // Send Verification Email
+        await SendVerificationEmailAsync(account, cancellationToken);
 
         // Generate tokens (User is logged in but Unverified)
         return await GenerateAuthResponseAsync(account, cancellationToken);
@@ -104,6 +90,13 @@ public class AuthService(
         if (!account.IsActive)
         {
             throw new UnauthorizedAccessException("Account is disabled");
+        }
+
+        // If unverified, resend verification email
+        if (!account.IsEmailVerified)
+        {
+            logger.LogInformation("[AuthService] User {Email} is unverified. Resending verification email...", account.Email);
+            await SendVerificationEmailAsync(account, cancellationToken);
         }
 
         // Update last login
@@ -201,6 +194,35 @@ public class AuthService(
             account.Email,
             DateTime.UtcNow
         ), cancellationToken);
+    }
+    
+    private async Task SendVerificationEmailAsync(Account account, CancellationToken cancellationToken)
+    {
+        // Generate Verification Token
+        var tokenString = Guid.NewGuid().ToString();
+        var expiresAt = DateTime.UtcNow.AddHours(24);
+
+        var verificationToken = new EmailVerificationToken
+        {
+            AccountId = account.Id,
+            Token = tokenString,
+            ExpiresAt = expiresAt
+        };
+
+        // Log Token Creation
+        logger.LogInformation("[AuthService] Saving verification token for {Email}...", account.Email);
+        await emailVerificationTokenRepository.AddAsync(verificationToken, cancellationToken);
+        logger.LogInformation("[AuthService] Token saved. Id: {TokenId}", verificationToken.Id);
+
+        // Publish Event
+        logger.LogInformation("[AuthService] Publishing EmailVerificationRequestedEvent for {Email}...", account.Email);
+        await publishEndpoint.Publish(new EmailVerificationRequestedEvent(
+            account.Id.ToString(),
+            account.Email,
+            tokenString,
+            expiresAt
+        ), cancellationToken);
+        logger.LogInformation("[AuthService] Event published successfully.");
     }
 
     private async Task<AuthResponseDto> GenerateAuthResponseAsync(Account account, CancellationToken cancellationToken)

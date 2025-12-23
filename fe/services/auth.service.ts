@@ -21,6 +21,10 @@ export const authService = {
         return apiClient.post<void>(`${AUTH_BASE}/revoke`, { refreshToken });
     },
 
+    async verifyEmail(token: string): Promise<void> {
+        return apiClient.post<void>(`${AUTH_BASE}/verify-email?token=${token}`, {});
+    },
+
     // Token management with Cookies
     getAccessToken(): string | null {
         return Cookies.get('accessToken') || null;

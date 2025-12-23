@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import { authService } from '@/services/auth.service';
 
 function VerifyEmailContent() {
     const searchParams = useSearchParams();
@@ -34,21 +35,12 @@ function VerifyEmailContent() {
 
         const verify = async () => {
             try {
-                // Should move URL to env or config
-                const res = await fetch(`https://sonixy.nhatcuong.io.vn/api/auth/verify-email?token=${token}`, {
-                    method: 'POST'
-                });
-
-                if (res.ok) {
-                    setStatus('success');
-                } else {
-                    const data = await res.json();
-                    setStatus('error');
-                    setMessage(data.error || 'Verification failed.');
-                }
-            } catch (err) {
+                await authService.verifyEmail(token);
+                setStatus('success');
+            } catch (err: any) {
                 setStatus('error');
-                setMessage('Something went wrong. Please try again.');
+                // err.message should come from api.ts wrapper
+                setMessage(err.message || 'Verification failed.');
             }
         };
 
