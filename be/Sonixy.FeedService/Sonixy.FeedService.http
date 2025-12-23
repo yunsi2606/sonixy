@@ -1,6 +1,0 @@
-@Sonixy.FeedService_HostAddress = http://localhost:5239
-
-GET {{Sonixy.FeedService_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

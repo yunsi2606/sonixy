@@ -4,10 +4,9 @@ using Sonixy.Shared.Events;
 
 namespace Sonixy.FeedService.Consumers;
 
-public class UserInteractionConsumer(IConnectionMultiplexer redis, ILogger<UserInteractionConsumer> logger)
-    : IConsumer<UserInteractionEvent>
+public class UserInteractionConsumer(IConnectionMultiplexer redis, ILogger<UserInteractionConsumer> logger) : IConsumer<UserInteractionEvent>
 {
-    private const double DecayFactor = 0.9;
+    private const double DecayFactor = 0.9; 
 
     public async Task Consume(ConsumeContext<UserInteractionEvent> context)
     {
@@ -28,10 +27,6 @@ public class UserInteractionConsumer(IConnectionMultiplexer redis, ILogger<UserI
 
         if (score == 0) return;
 
-        // In a real system, "Topic" would come from Post metadata (Tags/Categories).
-        // For V1, we use "General" or targetId as topic to demo the ZSET structure.
-        // Assuming TargetType=Post means we are interested in that Post's category. 
-        // We'll just use a dummy "General" topic for now.
         string topic = "General"; 
 
         // Update score with weight

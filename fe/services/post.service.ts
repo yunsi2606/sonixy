@@ -12,6 +12,10 @@ export const postService = {
         return apiClient.get<CursorPage<Post>>(`/api/posts/user/${userId}${query}`);
     },
 
+    async getPostById(id: string): Promise<Post> {
+        return apiClient.get<Post>(`/api/posts/${id}`);
+    },
+
     async createPost(content: string, visibility: 'public' | 'followers' = 'public', files?: File[]): Promise<Post> {
         const mediaItems: { type: 'image' | 'video', objectKey: string }[] = [];
 

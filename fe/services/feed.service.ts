@@ -9,8 +9,9 @@ export interface FeedResponse {
 }
 
 export const feedService = {
-    async getTimeline(page: number = 1, pageSize: number = 20): Promise<FeedResponse> {
-        return apiClient.get<FeedResponse>(`${FEED_BASE}?page=${page}&pageSize=${pageSize}`);
+    async getTimeline(userId: string): Promise<FeedResponse> {
+        if (!userId) return { items: [], hasMore: false };
+        return apiClient.get<FeedResponse>(`${FEED_BASE}?userId=${userId}`);
     },
 
     async getUserNetwork(userId: string): Promise<any> {

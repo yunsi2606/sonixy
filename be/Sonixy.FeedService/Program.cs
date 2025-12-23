@@ -2,6 +2,7 @@ using MassTransit;
 using MongoDB.Driver;
 using StackExchange.Redis;
 using Sonixy.FeedService.Consumers;
+using Sonixy.FeedService.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +30,14 @@ builder.Services.AddScoped<IMongoDatabase>(sp =>
     var client = sp.GetRequiredService<IMongoClient>();
     var dbName = builder.Configuration["MongoDB:DatabaseName"];
     return client.GetDatabase(dbName);
+    return client.GetDatabase(dbName);
+});
+
+// Service Clients
+builder.Services.AddHttpClient<IPostClient, PostClient>(client =>
+{
+    var postServiceUrl = builder.Configuration["Services:PostService"] ?? "http://post-service:8080";
+    client.BaseAddress = new Uri(postServiceUrl);
 });
 
 // MassTransit (RabbitMQ)

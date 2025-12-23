@@ -11,6 +11,9 @@ using Sonixy.PostService.Application.Interfaces;
 using MassTransit;
 using Sonixy.Shared.Events;
 
+using Sonixy.Shared.Events;
+using Sonixy.PostService.Application.Specifications;
+
 namespace Sonixy.PostService.Application.Services;
 
 public class PostService(
@@ -128,6 +131,36 @@ public class PostService(
         return new CursorPage<PostDto>(dtos, nextCursor, hasMore);
     }
 
+    public async Task<List<PostDto>> GetPostsByIdsAsync(IEnumerable<string> ids, string? currentUserId = null, CancellationToken cancellationToken = default)
+    {
+        var objectIds = new List<ObjectId>();
+        foreach (var id in ids)
+        {
+            if (ObjectId.TryParse(id, out var objectId))
+            {
+                objectIds.Add(objectId);
+            }
+        }
+
+        if (objectIds.Count == 0) return [];
+
+        var spec = new PostsByIdsSpecification(objectIds);
+        var posts = (await postRepository.FindAsync(spec, cancellationToken)).ToList();
+        
+        var postMap = posts.ToDictionary(p => p.Id, p => p);
+        var orderedPosts = new List<Post>();
+        
+        foreach (var id in objectIds)
+        {
+            if (postMap.TryGetValue(id, out var post))
+            {
+                orderedPosts.Add(post);
+            }
+        }
+
+        return await EnrichPostsAsync(orderedPosts, currentUserId, cancellationToken);
+    }
+
     public async Task<bool> ToggleLikeAsync(string postId, string userId, CancellationToken cancellationToken = default)
     {
         if (!ObjectId.TryParse(postId, out var postObjectId) || !ObjectId.TryParse(userId, out var userObjectId))
@@ -183,9 +216,6 @@ public class PostService(
             )
         ).ToList();
 
-        // Default displayName/avatar if user service fails or user not found
-        // "Unknown User" or maybe default to just "User"
-        // For avatar, if null, we let frontend handle or set empty string
         var displayName = author?.DisplayName ?? "Unknown User"; 
         var avatarUrl = author?.AvatarUrl ?? "";
         var username = author?.Username ?? "";

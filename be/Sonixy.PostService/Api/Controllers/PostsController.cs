@@ -109,4 +109,17 @@ public class PostsController(IPostService postService) : ControllerBase
         if (!success) return NotFound(new { error = "Post not found or invalid ID" });
         return Ok(new { success = true });
     }
+
+    /// <summary>
+    /// Retrieves a batch of posts by IDs
+    /// </summary>
+    [HttpPost("batch")]
+    [ProducesResponseType(typeof(List<PostDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetPostsByIds([FromBody] List<string> ids)
+    {
+        // currentUserId is optional, for "IsLiked" status
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var posts = await postService.GetPostsByIdsAsync(ids, userId);
+        return Ok(posts);
+    }
 }
