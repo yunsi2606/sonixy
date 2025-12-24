@@ -6,6 +6,7 @@ import { socialService } from '@/services/social.service';
 import { userService } from '@/services/user.service';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
+import { UserListItemSkeleton } from '@/components/skeletons/UserListItemSkeleton';
 
 interface UserListModalProps {
     isOpen: boolean;
@@ -94,8 +95,8 @@ export function UserListModal({ isOpen, onClose, initialType, userId }: UserList
                     <button
                         onClick={() => handleTabChange('followers')}
                         className={`flex-1 py-4 font-bold text-center transition-colors ${type === 'followers'
-                                ? 'text-[var(--color-primary)] border-b-2 border-[var(--color-primary)]'
-                                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                            ? 'text-[var(--color-primary)] border-b-2 border-[var(--color-primary)]'
+                            : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
                             }`}
                     >
                         Followers
@@ -103,8 +104,8 @@ export function UserListModal({ isOpen, onClose, initialType, userId }: UserList
                     <button
                         onClick={() => handleTabChange('following')}
                         className={`flex-1 py-4 font-bold text-center transition-colors ${type === 'following'
-                                ? 'text-[var(--color-primary)] border-b-2 border-[var(--color-primary)]'
-                                : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
+                            ? 'text-[var(--color-primary)] border-b-2 border-[var(--color-primary)]'
+                            : 'text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]'
                             }`}
                     >
                         Following
@@ -143,8 +144,10 @@ export function UserListModal({ isOpen, onClose, initialType, userId }: UserList
 
                     {/* Loading State */}
                     {isLoading && (
-                        <div className="flex justify-center p-4">
-                            <div className="w-6 h-6 border-2 border-[var(--color-primary)] border-t-transparent rounded-full animate-spin" />
+                        <div className="space-y-4">
+                            {[1, 2, 3, 4, 5].map((i) => (
+                                <UserListItemSkeleton key={i} />
+                            ))}
                         </div>
                     )}
 

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import type { User } from '@/types/api';
 import { socialService } from '@/services/social.service';
 import { UserListModal } from './UserListModal';
+import { ProfileStatsSkeleton } from '@/components/skeletons/ProfileStatsSkeleton';
 
 interface ProfileHeaderProps {
     user: User;
@@ -116,26 +117,30 @@ export function ProfileHeader({ user, isOwnProfile, onEdit }: ProfileHeaderProps
                 </div>
 
                 {/* Stats */}
-                <div className="flex gap-8 border-t border-[var(--color-border)] pt-6">
-                    <div className="text-center cursor-pointer hover:opacity-80 transition-opacity">
-                        <div className="text-2xl font-bold">{stats.posts}</div>
-                        <div className="text-sm text-[var(--color-text-secondary)]">Posts</div>
+                {isLoadingStats ? (
+                    <ProfileStatsSkeleton />
+                ) : (
+                    <div className="flex gap-8 border-t border-[var(--color-border)] pt-6">
+                        <div className="text-center cursor-pointer hover:opacity-80 transition-opacity">
+                            <div className="text-2xl font-bold">{stats.posts}</div>
+                            <div className="text-sm text-[var(--color-text-secondary)]">Posts</div>
+                        </div>
+                        <div
+                            className="text-center cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => openModal('followers')}
+                        >
+                            <div className="text-2xl font-bold">{stats.followers}</div>
+                            <div className="text-sm text-[var(--color-text-secondary)]">Followers</div>
+                        </div>
+                        <div
+                            className="text-center cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => openModal('following')}
+                        >
+                            <div className="text-2xl font-bold">{stats.following}</div>
+                            <div className="text-sm text-[var(--color-text-secondary)]">Following</div>
+                        </div>
                     </div>
-                    <div
-                        className="text-center cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => openModal('followers')}
-                    >
-                        <div className="text-2xl font-bold">{stats.followers}</div>
-                        <div className="text-sm text-[var(--color-text-secondary)]">Followers</div>
-                    </div>
-                    <div
-                        className="text-center cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => openModal('following')}
-                    >
-                        <div className="text-2xl font-bold">{stats.following}</div>
-                        <div className="text-sm text-[var(--color-text-secondary)]">Following</div>
-                    </div>
-                </div>
+                )}
             </div>
 
             {/* User List Modal */}

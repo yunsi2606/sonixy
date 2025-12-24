@@ -1,6 +1,6 @@
 import React from 'react';
+import { CommentThreadSkeleton } from '@/components/skeletons/CommentSkeleton';
 
-// Define interface locally if not in api.ts
 export interface Comment {
     id: string;
     author: {
@@ -15,9 +15,14 @@ export interface Comment {
 interface CommentThreadProps {
     comments: Comment[];
     depth?: number;
+    isLoading?: boolean;
 }
 
-export function CommentThread({ comments, depth = 0 }: CommentThreadProps) {
+export function CommentThread({ comments, depth = 0, isLoading }: CommentThreadProps) {
+    if (isLoading) {
+        return <CommentThreadSkeleton />;
+    }
+
     if (!comments || comments.length === 0) return null;
 
     return (

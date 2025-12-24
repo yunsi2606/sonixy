@@ -8,6 +8,8 @@ import { postService } from '@/services/post.service';
 import { useInfiniteScroll } from '@/hooks/useInfiniteScroll';
 import { PostCard } from '@/components/common/PostCard';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
+import { ProfileSkeleton } from '@/components/skeletons/ProfileSkeleton';
+import { PostSkeleton } from '@/components/skeletons/PostSkeleton';
 import type { User } from '@/types/api';
 
 export default function UserProfilePage() {
@@ -87,8 +89,8 @@ export default function UserProfilePage() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[var(--color-bg-primary)] flex items-center justify-center">
-                <div className="text-[var(--color-text-secondary)]">Loading profile...</div>
+            <div className="min-h-screen bg-[var(--color-bg-primary)] pb-8 pt-4 max-w-4xl mx-auto px-4">
+                <ProfileSkeleton />
             </div>
         );
     }
@@ -202,8 +204,9 @@ export default function UserProfilePage() {
                     <h2 className="text-2xl font-bold mb-6">{isOwnProfile ? 'Your Posts' : 'Posts'}</h2>
                     <div className="space-y-4">
                         {postsLoading && posts.length === 0 ? (
-                            <div className="glass p-8 rounded-2xl text-center text-[var(--color-text-secondary)]">
-                                Loading posts...
+                            <div className="space-y-4">
+                                <PostSkeleton />
+                                <PostSkeleton />
                             </div>
                         ) : posts.length === 0 ? (
                             <div className="glass p-12 rounded-2xl text-center">

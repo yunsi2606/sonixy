@@ -5,6 +5,7 @@ import type { Post, User } from '@/types/api';
 import type { Comment } from '@/types/comment';
 import { commentService } from '@/services/comment.service';
 import { userService } from '@/services/user.service';
+import { CommentThreadSkeleton } from '@/components/skeletons/CommentSkeleton';
 
 interface CommentSectionProps {
     post: Post;
@@ -109,7 +110,9 @@ export function CommentSection({ post, initialComments = [] }: CommentSectionPro
             {/* Scrollable List */}
             <div className="flex-1 overflow-y-auto p-4 space-y-6">
                 {isLoading && comments.length === 0 ? (
-                    <div className="text-center text-white/40 mt-10">Loading comments...</div>
+                    <div className="mt-4 px-2">
+                        <CommentThreadSkeleton />
+                    </div>
                 ) : rootComments.length === 0 ? (
                     <div className="text-center text-white/40 mt-10">
                         No comments yet. Be the first!

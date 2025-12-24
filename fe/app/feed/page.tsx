@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { PostCard } from '@/components/common/PostCard';
 import { CreatePostModal } from '@/components/feed/CreatePostModal';
+import { PostSkeleton } from '@/components/skeletons/PostSkeleton';
 import { postService } from '@/services/post.service';
 import type { Post } from '@/types/api';
 
@@ -73,12 +74,10 @@ export default function FeedPage() {
             {/* Feed List */}
             <div className="flex flex-col">
                 {isLoading ? (
-                    <div className="flex justify-center py-12">
-                        <div className="flex items-center gap-2 text-[var(--color-text-muted)] animate-pulse">
-                            <span className="w-2 h-2 rounded-full bg-[var(--color-primary)]" />
-                            <span className="w-2 h-2 rounded-full bg-[var(--color-secondary)] delay-75" />
-                            <span className="w-2 h-2 rounded-full bg-[var(--color-primary)] delay-150" />
-                        </div>
+                    <div className="space-y-4">
+                        <PostSkeleton />
+                        <PostSkeleton />
+                        <PostSkeleton />
                     </div>
                 ) : (
                     posts.map(post => (
