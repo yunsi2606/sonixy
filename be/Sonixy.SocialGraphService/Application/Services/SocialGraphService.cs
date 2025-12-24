@@ -111,4 +111,28 @@ public class SocialGraphService(IFollowRepository followRepository, ILikeReposit
 
         return await followRepository.GetFollowingCountAsync(userOid, cancellationToken);
     }
+
+    public async Task<IEnumerable<string>> GetFollowersAsync(string userId, int skip = 0, int limit = 20, CancellationToken cancellationToken = default)
+    {
+        if (!ObjectId.TryParse(userId, out var userOid))
+            return [];
+
+        var explicitSkip = Math.Max(0, skip);
+        var explicitLimit = Math.Clamp(limit, 1, 100);
+
+        var follows = await followRepository.GetFollowersAsync(userOid, explicitSkip, explicitLimit, cancellationToken);
+        return follows.Select(f => f.FollowerId.ToString());
+    }
+
+    public async Task<IEnumerable<string>> GetFollowingAsync(string userId, int skip = 0, int limit = 20, CancellationToken cancellationToken = default)
+    {
+        if (!ObjectId.TryParse(userId, out var userOid))
+            return [];
+
+        var explicitSkip = Math.Max(0, skip);
+        var explicitLimit = Math.Clamp(limit, 1, 100);
+
+        var follows = await followRepository.GetFollowingAsync(userOid, explicitSkip, explicitLimit, cancellationToken);
+        return follows.Select(f => f.FollowingId.ToString());
+    }
 }

@@ -34,6 +34,14 @@ export const socialService = {
         return res.count;
     },
 
+    async getFollowers(userId: string, skip = 0, limit = 20): Promise<string[]> {
+        return apiClient.get<string[]>(`${SOCIAL_BASE}/follows/${userId}/followers?skip=${skip}&limit=${limit}`);
+    },
+
+    async getFollowing(userId: string, skip = 0, limit = 20): Promise<string[]> {
+        return apiClient.get<string[]>(`${SOCIAL_BASE}/follows/${userId}/following?skip=${skip}&limit=${limit}`);
+    },
+
     // Likes
     async likePost(postId: string): Promise<void> {
         const token = authService.getAccessToken();

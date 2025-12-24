@@ -14,4 +14,6 @@ public interface ISocialGraphService
     Task<bool> HasLikedAsync(string userId, string postId, CancellationToken cancellationToken = default);
     Task<long> GetFollowersCountAsync(string userId, CancellationToken cancellationToken = default);
     Task<long> GetFollowingCountAsync(string userId, CancellationToken cancellationToken = default);
+    Task<IEnumerable<string>> GetFollowersAsync(string userId, int skip = 0, int limit = 20, CancellationToken cancellationToken = default);
+    Task<IEnumerable<string>> GetFollowingAsync(string userId, int skip = 0, int limit = 20, CancellationToken cancellationToken = default);
 }

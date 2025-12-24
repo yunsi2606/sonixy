@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import type { User } from '@/types/api';
 import { socialService } from '@/services/social.service';
+import { UserListModal } from './UserListModal';
 
 interface ProfileHeaderProps {
     user: User;
@@ -14,6 +15,11 @@ export function ProfileHeader({ user, isOwnProfile, onEdit }: ProfileHeaderProps
     const [stats, setStats] = useState({ followers: 0, following: 0, posts: 0 });
     const [isFollowing, setIsFollowing] = useState(false);
     const [isLoadingStats, setIsLoadingStats] = useState(true);
+
+    const [modalConfig, setModalConfig] = useState<{ isOpen: boolean; type: 'followers' | 'following' }>({
+        isOpen: false,
+        type: 'followers'
+    });
 
     useEffect(() => {
         loadStats();
@@ -51,6 +57,10 @@ export function ProfileHeader({ user, isOwnProfile, onEdit }: ProfileHeaderProps
         }
     };
 
+    const openModal = (type: 'followers' | 'following') => {
+        setModalConfig({ isOpen: true, type });
+    };
+
     return (
         <div className="glass rounded-2xl overflow-hidden mb-8 animate-fade-in">
             {/* Cover Image */}
@@ -84,8 +94,8 @@ export function ProfileHeader({ user, isOwnProfile, onEdit }: ProfileHeaderProps
                             <button
                                 onClick={handleFollowToggle}
                                 className={`px-8 py-2 rounded-xl font-medium transition-all hover:scale-105 active:scale-95 ${isFollowing
-                                        ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--color-border)]'
-                                        : 'bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)]'
+                                    ? 'bg-[var(--color-surface)] text-[var(--color-text-primary)] border border-[var(--color-border)]'
+                                    : 'bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)]'
                                     }`}
                             >
                                 {isFollowing ? 'Following' : 'Follow'}
@@ -111,16 +121,30 @@ export function ProfileHeader({ user, isOwnProfile, onEdit }: ProfileHeaderProps
                         <div className="text-2xl font-bold">{stats.posts}</div>
                         <div className="text-sm text-[var(--color-text-secondary)]">Posts</div>
                     </div>
-                    <div className="text-center cursor-pointer hover:opacity-80 transition-opacity">
+                    <div
+                        className="text-center cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => openModal('followers')}
+                    >
                         <div className="text-2xl font-bold">{stats.followers}</div>
                         <div className="text-sm text-[var(--color-text-secondary)]">Followers</div>
                     </div>
-                    <div className="text-center cursor-pointer hover:opacity-80 transition-opacity">
+                    <div
+                        className="text-center cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => openModal('following')}
+                    >
                         <div className="text-2xl font-bold">{stats.following}</div>
                         <div className="text-sm text-[var(--color-text-secondary)]">Following</div>
                     </div>
                 </div>
             </div>
+
+            {/* User List Modal */}
+            <UserListModal
+                isOpen={modalConfig.isOpen}
+                onClose={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+                initialType={modalConfig.type}
+                userId={user.id}
+            />
         </div>
     );
 }

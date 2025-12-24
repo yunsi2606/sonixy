@@ -47,4 +47,8 @@ export const userService = {
 
         return publicUrl;
     },
+    async getUsersBatch(ids: string[]): Promise<User[]> {
+        if (!ids || ids.length === 0) return [];
+        return apiClient.post<User[]>(`${USER_BASE}/batch`, { ids });
+    },
 };

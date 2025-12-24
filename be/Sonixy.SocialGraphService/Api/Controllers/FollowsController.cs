@@ -92,4 +92,28 @@ public class FollowsController : ControllerBase
         var count = await _socialGraphService.GetFollowingCountAsync(userId);
         return Ok(new { count });
     }
+
+    /// <summary>
+    /// Get list of followers for a user
+    /// </summary>
+    [HttpGet("{userId}/followers")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetFollowers(string userId, [FromQuery] int skip = 0, [FromQuery] int limit = 20)
+    {
+        var followers = await _socialGraphService.GetFollowersAsync(userId, skip, limit);
+        return Ok(followers);
+    }
+
+    /// <summary>
+    /// Get list of users followed by a user
+    /// </summary>
+    [HttpGet("{userId}/following")]
+    [AllowAnonymous]
+    [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetFollowing(string userId, [FromQuery] int skip = 0, [FromQuery] int limit = 20)
+    {
+        var following = await _socialGraphService.GetFollowingAsync(userId, skip, limit);
+        return Ok(following);
+    }
 }

@@ -13,8 +13,4 @@ export const feedService = {
         if (!userId) return { items: [], hasMore: false };
         return apiClient.get<FeedResponse>(`${FEED_BASE}?userId=${userId}`);
     },
-
-    async getUserNetwork(userId: string): Promise<any> {
-        return apiClient.get(`${FEED_BASE}/network/${userId}`);
-    }
 };

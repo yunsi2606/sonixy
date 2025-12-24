@@ -103,4 +103,24 @@ public class FollowRepository : IFollowRepository
     {
         return await _collection.CountDocumentsAsync(f => f.FollowerId == userId, cancellationToken: cancellationToken);
     }
+
+    public async Task<List<Follow>> GetFollowersAsync(ObjectId userId, int skip, int limit, CancellationToken cancellationToken = default)
+    {
+        return await _collection
+            .Find(f => f.FollowingId == userId)
+            .SortByDescending(f => f.CreatedAt)
+            .Skip(skip)
+            .Limit(limit)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<Follow>> GetFollowingAsync(ObjectId userId, int skip, int limit, CancellationToken cancellationToken = default)
+    {
+        return await _collection
+            .Find(f => f.FollowerId == userId)
+            .SortByDescending(f => f.CreatedAt)
+            .Skip(skip)
+            .Limit(limit)
+            .ToListAsync(cancellationToken);
+    }
 }

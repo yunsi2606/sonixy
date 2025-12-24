@@ -51,17 +51,4 @@ public class FeedController(IConnectionMultiplexer redis) : ControllerBase
 
         return Ok(new { items = orderedPosts, hasMore = false });
     }
-
-    [HttpGet("network/{userId}")]
-    public IActionResult GetUserNetwork(string userId)
-    {
-        // Mock
-        return Ok(new 
-        { 
-            FollowersCount = 0, 
-            FollowingCount = 0,
-            Followers = new List<object>(),
-            Following = new List<object>() 
-        });
-    }
 }

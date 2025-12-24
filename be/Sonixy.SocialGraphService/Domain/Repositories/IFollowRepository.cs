@@ -10,4 +10,6 @@ public interface IFollowRepository : IRepository<Follow>
     Task<bool> IsFollowingAsync(ObjectId followerId, ObjectId followingId, CancellationToken cancellationToken = default);
     Task<long> GetFollowerCountAsync(ObjectId userId, CancellationToken cancellationToken = default);
     Task<long> GetFollowingCountAsync(ObjectId userId, CancellationToken cancellationToken = default);
+    Task<List<Follow>> GetFollowersAsync(ObjectId userId, int skip, int limit, CancellationToken cancellationToken = default);
+    Task<List<Follow>> GetFollowingAsync(ObjectId userId, int skip, int limit, CancellationToken cancellationToken = default);
 }
