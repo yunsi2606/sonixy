@@ -62,7 +62,7 @@
             }
         },
         {
-            "DownstreamPathTemplate": "/{everything}",
+            "DownstreamPathTemplate": "/api/users/{everything}",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
@@ -90,7 +90,7 @@
             }
         },
         {
-            "DownstreamPathTemplate": "/{everything}",
+            "DownstreamPathTemplate": "/api/posts/{everything}",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
@@ -118,7 +118,7 @@
             }
         },
         {
-            "DownstreamPathTemplate": "/{everything}",
+            "DownstreamPathTemplate": "/api/{everything}",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
