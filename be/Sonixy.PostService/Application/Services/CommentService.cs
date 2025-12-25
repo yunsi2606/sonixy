@@ -5,10 +5,15 @@ using Sonixy.PostService.Application.Specifications;
 using Sonixy.PostService.Domain.Entities;
 using Sonixy.PostService.Domain.Repositories;
 using Sonixy.Shared.Pagination;
+using MassTransit;
+using Sonixy.Shared.Events;
 
 namespace Sonixy.PostService.Application.Services;
 
-public class CommentService(ICommentRepository commentRepository) : ICommentService
+public class CommentService(
+    ICommentRepository commentRepository, 
+    IPostRepository postRepository,
+    IPublishEndpoint publishEndpoint) : ICommentService
 {
     public async Task<CommentDto?> CreateCommentAsync(string userId, CreateCommentDto dto, CancellationToken cancellationToken = default)
     {
@@ -17,6 +22,11 @@ public class CommentService(ICommentRepository commentRepository) : ICommentServ
         
         if (!ObjectId.TryParse(dto.PostId, out var postObjectId))
             throw new ArgumentException("Invalid post ID");
+
+        // Fetch Post to validate and get Author for notification
+        var post = await postRepository.GetByIdAsync(postObjectId, cancellationToken);
+        if (post == null)
+            throw new ArgumentException("Post not found");
 
         ObjectId? finalParentId = null;
         if (!string.IsNullOrEmpty(dto.ParentId) && ObjectId.TryParse(dto.ParentId, out var parentId))
@@ -53,6 +63,34 @@ public class CommentService(ICommentRepository commentRepository) : ICommentServ
         };
 
         await commentRepository.AddAsync(comment, cancellationToken);
+
+        // Publish Notification Event
+        try 
+        {
+            // Determine Target: If reply, notify the user being replied to. If root comment, notify post author.
+            string targetUserId = replyToUserId?.ToString() ?? post.AuthorId.ToString();
+            
+            // Don't notify self
+            if (targetUserId != userId)
+            {
+                var actionType = replyToUserId.HasValue ? UserActionType.Reply : UserActionType.Comment;
+
+                await publishEndpoint.Publish(new UserInteractionEvent(
+                    UserId: userId,
+                    TargetId: post.Id.ToString(),
+                    TargetType: TargetType.Post, // Context is Post
+                    ActionType: actionType,
+                    Timestamp: DateTime.UtcNow,
+                    ActorName: dto.AuthorUsername ?? "Unknown",
+                    ActorAvatar: dto.AuthorAvatarUrl,
+                    TargetUserId: targetUserId
+                ), cancellationToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to publish comment event: {ex.Message}");
+        }
 
         return MapToDto(comment, userId);
     }

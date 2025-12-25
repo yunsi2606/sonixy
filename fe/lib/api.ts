@@ -154,6 +154,14 @@ class ApiClient {
         });
     }
 
+    async put<T>(endpoint: string, data: unknown, token?: string): Promise<T> {
+        return this.request<T>(endpoint, {
+            method: 'PUT',
+            body: data instanceof FormData ? data : JSON.stringify(data),
+            token,
+        });
+    }
+
     async patch<T>(endpoint: string, data: unknown, token?: string): Promise<T> {
         return this.request<T>(endpoint, {
             method: 'PATCH',

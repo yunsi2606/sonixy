@@ -144,6 +144,48 @@
                 "DELETE"
             ],
             "Key": "feed-service"
+        },
+        {
+            "DownstreamPathTemplate": "/hubs/notifications",
+            "DownstreamScheme": "ws",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "notification-service",
+                    "Port": 8094
+                }
+            ],
+            "UpstreamPathTemplate": "/hubs/notifications",
+            "UpstreamHttpMethod": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "OPTIONS"
+            ],
+            "Key": "notification-hub",
+            "RateLimitOptions": {
+                "EnableRateLimiting": false
+            }
+        },
+        {
+            "DownstreamPathTemplate": "/api/notifications/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "notification-service",
+                    "Port": 8094
+                }
+            ],
+            "UpstreamPathTemplate": "/api/notifications/{everything}",
+            "UpstreamHttpMethod": [
+                "GET",
+                "PUT",
+                "POST"
+            ],
+            "Key": "notification-service",
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer"
+            }
         }
     ],
     "SwaggerEndPoints": [

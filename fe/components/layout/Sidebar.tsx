@@ -4,10 +4,12 @@ import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import { useNotification } from '@/contexts/NotificationContext';
 
 export function Sidebar() {
     const { user, logout } = useAuth();
     const router = useRouter();
+    const { unreadCount } = useNotification(); // Hook usage
 
     const onLogout = async () => {
         if (logout) {
@@ -32,7 +34,7 @@ export function Sidebar() {
                 <div className="h-4" />
 
                 <NavGroup title="SOCIAL">
-                    <NavItem icon="🔔" name="Notifications" href="/notifications" badge={3} />
+                    <NavItem icon="🔔" name="Notifications" href="/notifications" badge={unreadCount > 0 ? unreadCount : undefined} />
                     <NavItem icon="💬" name="Messages" href="/messages" badge={5} />
                     <NavItem icon="👥" name="Communities" href="/communities" />
                 </NavGroup>

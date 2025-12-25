@@ -236,6 +236,35 @@ services:
     networks:
       - sonixy-network
 
+  # Notification Service
+  notification-service:
+    build:
+      context: .
+      dockerfile: Sonixy.NotificationService/Dockerfile
+    container_name: sonixy-notification
+    restart: always
+    ports:
+      - "5014:8094"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8094
+      - CORS__AllowOrigins=https://sonixy.nhatcuong.io.vn
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=${RABBITMQ_USER:-guest}
+      - RabbitMQ__Password=${RABBITMQ_PASS:-guest}
+      - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
+      - MongoDB__DatabaseName=sonixy_notifications
+      - Jwt__SecretKey=${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast32CharactersLongForHS256}
+      - Jwt__Issuer=Sonixy.IdentityService
+      - Jwt__Audience=Sonixy.Client
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    networks:
+      - sonixy-network
+
   # API Gateway
   gateway:
     build:

@@ -180,6 +180,30 @@ public class PostService(
         {
             post.LikedBy.Add(userObjectId);
             post.LikeCount++;
+
+            // Publish Like Event (Idempotent: Only on new like)
+            try 
+            {
+                var actor = await userClient.GetUserAsync(userId, cancellationToken);
+                if (actor != null && post.AuthorId.ToString() != userId) // Don't notify self
+                {
+                    await publishEndpoint.Publish(new UserInteractionEvent(
+                        UserId: userId,
+                        TargetId: post.Id.ToString(),
+                        TargetType: TargetType.Post,
+                        ActionType: UserActionType.Like,
+                        Timestamp: DateTime.UtcNow,
+                        ActorName: actor.DisplayName ?? "Unknown",
+                        ActorAvatar: actor.AvatarUrl,
+                        TargetUserId: post.AuthorId.ToString()
+                    ), cancellationToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't fail the toggle
+                Console.WriteLine($"Failed to publish like event: {ex.Message}");
+            }
         }
 
         await postRepository.UpdateAsync(post, cancellationToken);

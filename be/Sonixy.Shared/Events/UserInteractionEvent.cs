@@ -8,7 +8,8 @@ public enum UserActionType
     Share,  // Share post
     Comment, // Add comment
     Scroll, // Scroll past (Negative signal if fast)
-    ProfileView // Visit User Profile
+    ProfileView, // Visit User Profile
+    Reply   // Reply to a comment
 }
 
 public enum TargetType
@@ -19,10 +20,15 @@ public enum TargetType
 }
 
 public record UserInteractionEvent(
-    string UserId,
-    string TargetId,
-    TargetType TargetType,
-    UserActionType ActionType,
-    int DurationMs = 0,
-    DateTime Timestamp = default
+    string UserId,           // The actor (required)
+    string TargetId,         // The entity acted upon (required)
+    TargetType TargetType,   // Enum (required for analytics)
+    UserActionType ActionType, // Enum (required for analytics)
+    int DurationMs = 0,      // For View/Scroll events
+    DateTime Timestamp = default, // Event time
+    
+    // Notification Enrichment Fields (Optional/Nullable)
+    string? ActorName = null,
+    string? ActorAvatar = null,
+    string? TargetUserId = null // Recipient of notification
 );

@@ -37,6 +37,48 @@
             "Key": "feed-service"
         },
         {
+            "DownstreamPathTemplate": "/hubs/notifications",
+            "DownstreamScheme": "ws",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5014
+                }
+            ],
+            "UpstreamPathTemplate": "/hubs/notifications",
+            "UpstreamHttpMethod": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "OPTIONS"
+            ],
+            "Key": "notification-hub",
+            "RateLimitOptions": {
+                "EnableRateLimiting": false
+            }
+        },
+        {
+            "DownstreamPathTemplate": "/api/notifications/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5014
+                }
+            ],
+            "UpstreamPathTemplate": "/api/notifications/{everything}",
+            "UpstreamHttpMethod": [
+                "GET",
+                "PUT",
+                "POST"
+            ],
+            "Key": "notification-service",
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer"
+            }
+        },
+        {
             "DownstreamPathTemplate": "/api/Auth/{everything}",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
