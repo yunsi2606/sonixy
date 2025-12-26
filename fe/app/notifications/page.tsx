@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { useNotification } from '@/contexts/NotificationContext';
 import { NotificationItem } from '@/components/notifications/NotificationItem';
+import { NotificationListSkeleton } from '@/components/skeletons/NotificationSkeleton';
 
 export default function NotificationsPage() {
     const { notifications, fetchNotifications, markAsRead, markAllAsRead, isLoading } = useNotification();
@@ -30,7 +31,7 @@ export default function NotificationsPage() {
 
             <div className="min-h-[50vh]">
                 {isLoading && notifications?.length === 0 ? (
-                    <div className="p-8 text-center text-[var(--color-text-secondary)]">Loading notifications...</div>
+                    <NotificationListSkeleton />
                 ) : notifications?.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-[var(--color-text-muted)]">
                         <span className="text-4xl mb-4">🔕</span>

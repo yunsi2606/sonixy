@@ -41,14 +41,14 @@ public class NotificationsController(INotificationService service) : ControllerB
         return Ok(new { Count = count });
     }
 
-    [HttpPost("{id}/read")]
+    [HttpPut("{id}/read")]
     public async Task<IActionResult> MarkAsRead(string id)
     {
         await service.MarkAsReadAsync(id);
         return Ok();
     }
 
-    [HttpPost("read-all")]
+    [HttpPut("read-all")]
     public async Task<IActionResult> MarkAllAsRead()
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
