@@ -25,3 +25,10 @@ public class CreateNotificationDto
     public string EntityId { get; set; } = null!;
     public NotificationType Type { get; set; }
 }
+
+public class NotificationListDto
+{
+    public IEnumerable<NotificationDto> Items { get; set; } = new List<NotificationDto>();
+    public long UnreadCount { get; set; }
+    public bool HasMore { get; set; }
+}

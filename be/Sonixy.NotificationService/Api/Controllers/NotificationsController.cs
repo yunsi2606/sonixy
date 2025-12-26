@@ -19,7 +19,16 @@ public class NotificationsController(INotificationService service) : ControllerB
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
         var notifications = await service.GetUserNotificationsAsync(userId, page, pageSize);
-        return Ok(notifications);
+        var unreadCount = await service.GetUnreadCountAsync(userId);
+        
+        var list = notifications.ToList();
+        
+        return Ok(new NotificationListDto
+        { 
+            Items = list, 
+            UnreadCount = unreadCount,
+            HasMore = list.Count == pageSize
+        });
     }
 
     [HttpGet("unread-count")]

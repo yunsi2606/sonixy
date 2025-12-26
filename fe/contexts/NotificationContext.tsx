@@ -34,14 +34,17 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         setIsLoading(true);
         try {
             const data = await NotificationService.getNotifications(page);
+            console.log("Fetched notifications:", data); // Debug log
+
             if (page === 1) {
-                setNotifications(data.items);
+                setNotifications(data.items || []);
             } else {
-                setNotifications(prev => [...prev, ...data.items]);
+                setNotifications(prev => [...(prev || []), ...(data.items || [])]);
             }
-            setUnreadCount(data.unreadCount);
+            setUnreadCount(data.unreadCount || 0);
         } catch (error) {
             console.error("Failed to fetch notifications", error);
+            setNotifications([]); // Safe fallback
         } finally {
             setIsLoading(false);
         }
@@ -71,8 +74,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
                 console.log("SignalR Connected");
 
                 connection.on("ReceiveNotification", (notification: Notification) => {
-                    setNotifications(prev => [notification, ...prev]);
-                    setUnreadCount(prev => prev + 1);
+                    console.log("Received signalr notification:", notification);
+                    setNotifications(prev => [notification, ...(prev || [])]);
+                    setUnreadCount(prev => (prev || 0) + 1);
                     // Optional: Play sound or show toast
                 });
 
