@@ -34,6 +34,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
         };
+        
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken)
+                    && path.StartsWithSegments("/hubs/notifications"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
+        };
     });
 
 // Add Ocelot
@@ -65,7 +82,9 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Middleware
+app.UseRouting();
 app.UseCors();
+app.UseWebSockets();
 app.UseAuthentication();
 
 // app.UseSwagger();
