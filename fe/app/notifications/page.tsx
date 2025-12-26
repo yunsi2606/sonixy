@@ -29,16 +29,16 @@ export default function NotificationsPage() {
             </div>
 
             <div className="min-h-[50vh]">
-                {isLoading && notifications.length === 0 ? (
+                {isLoading && notifications?.length === 0 ? (
                     <div className="p-8 text-center text-[var(--color-text-secondary)]">Loading notifications...</div>
-                ) : notifications.length === 0 ? (
+                ) : notifications?.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-[var(--color-text-muted)]">
                         <span className="text-4xl mb-4">🔕</span>
                         <p>No notifications yet</p>
                     </div>
                 ) : (
                     <div>
-                        {notifications.map(notification => (
+                        {notifications?.map(notification => (
                             <NotificationItem
                                 key={notification.id}
                                 notification={notification}

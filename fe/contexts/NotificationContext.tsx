@@ -16,6 +16,8 @@ interface NotificationContextType {
     connectionState: string;
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5050';
+
 const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
 
 export function NotificationProvider({ children }: { children: React.ReactNode }) {
@@ -53,7 +55,7 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
         if (!token) return;
 
         const connection = new HubConnectionBuilder()
-            .withUrl("https://sonixy.nhatcuong.io.vn/hubs/notifications", {
+            .withUrl(`${API_BASE_URL}/hubs/notifications`, {
                 accessTokenFactory: () => token
             })
             .withAutomaticReconnect()
