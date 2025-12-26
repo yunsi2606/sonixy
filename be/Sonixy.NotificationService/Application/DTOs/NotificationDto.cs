@@ -13,6 +13,7 @@ public class NotificationDto
     public string EntityId { get; set; } = null!;
     public NotificationType Type { get; set; }
     public NotificationStatus Status { get; set; }
+    public bool IsRead => Status == NotificationStatus.Read;
     public DateTime CreatedAt { get; set; }
 }
 
