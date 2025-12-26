@@ -146,15 +146,15 @@
             "Key": "feed-service"
         },
         {
-            "DownstreamPathTemplate": "/hubs/notifications",
-            "DownstreamScheme": "ws",
+            "DownstreamPathTemplate": "/hubs/notifications/{everything}",
+            "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
                 {
                     "Host": "notification-service",
                     "Port": 8094
                 }
             ],
-            "UpstreamPathTemplate": "/hubs/notifications",
+            "UpstreamPathTemplate": "/hubs/notifications/{everything}",
             "UpstreamHttpMethod": [
                 "GET",
                 "POST",
@@ -163,6 +163,7 @@
                 "OPTIONS"
             ],
             "Key": "notification-hub",
+            "Priority": 0,
             "RateLimitOptions": {
                 "EnableRateLimiting": false
             }

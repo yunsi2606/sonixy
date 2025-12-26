@@ -37,7 +37,26 @@
             "Key": "feed-service"
         },
         {
-            "DownstreamPathTemplate": "/hubs/notifications",
+            "DownstreamPathTemplate": "/hubs/notifications/negotiate",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5014
+                }
+            ],
+            "UpstreamPathTemplate": "/hubs/notifications/negotiate",
+            "UpstreamHttpMethod": [
+                "POST"
+            ],
+            "Priority": 100,
+            "Key": "notification-hub-negotiate",
+            "RateLimitOptions": {
+                "EnableRateLimiting": false
+            }
+        },
+        {
+            "DownstreamPathTemplate": "/hubs/notifications/{everything}",
             "DownstreamScheme": "ws",
             "DownstreamHostAndPorts": [
                 {
@@ -45,7 +64,7 @@
                     "Port": 5014
                 }
             ],
-            "UpstreamPathTemplate": "/hubs/notifications",
+            "UpstreamPathTemplate": "/hubs/notifications/{everything}",
             "UpstreamHttpMethod": [
                 "GET",
                 "POST",
@@ -53,7 +72,30 @@
                 "DELETE",
                 "OPTIONS"
             ],
-            "Key": "notification-hub",
+            "Priority": 1,
+            "Key": "notification-hub-ws",
+            "RateLimitOptions": {
+                "EnableRateLimiting": false
+            }
+        },
+        {
+            "DownstreamPathTemplate": "/hubs/notifications/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5014
+                }
+            ],
+            "UpstreamPathTemplate": "/notifications/{everything}",
+            "UpstreamHttpMethod": [
+                "GET",
+                "POST",
+                "PUT",
+                "DELETE",
+                "OPTIONS"
+            ],
+            "Key": "notification-hub-alias",
             "RateLimitOptions": {
                 "EnableRateLimiting": false
             }

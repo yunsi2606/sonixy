@@ -1,5 +1,7 @@
 import { apiClient } from '@/lib/api';
 
+const NOTIFICATION_BASE = '/api/notifications';
+
 export interface Notification {
     id: string;
     actorId: string;
@@ -20,15 +22,15 @@ export interface NotificationResponse {
 
 export const NotificationService = {
     getNotifications: async (pageIndex: number = 1, pageSize: number = 20): Promise<NotificationResponse> => {
-        const response = await apiClient.get<NotificationResponse>(`/notifications?pageIndex=${pageIndex}&pageSize=${pageSize}`);
+        const response = await apiClient.get<NotificationResponse>(`${NOTIFICATION_BASE}?pageIndex=${pageIndex}&pageSize=${pageSize}`);
         return response;
     },
 
     markAsRead: async (id: string): Promise<void> => {
-        await apiClient.put(`/notifications/${id}/read`, {});
+        await apiClient.put(`${NOTIFICATION_BASE}/${id}/read`, {});
     },
 
     markAllAsRead: async (): Promise<void> => {
-        await apiClient.put(`/notifications/read-all`, {});
+        await apiClient.put(`${NOTIFICATION_BASE}/read-all`, {});
     }
 };
