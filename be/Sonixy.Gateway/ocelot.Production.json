@@ -158,10 +158,11 @@
             "UpstreamHttpMethod": [
                 "GET",
                 "POST",
-                "PUT",
-                "DELETE",
                 "OPTIONS"
             ],
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer"
+            },
             "Key": "notification-hub",
             "Priority": 0,
             "RateLimitOptions": {
@@ -253,6 +254,17 @@
                     "Version": "v1",
                     "Url": "http://feed-service:8093/swagger/v1/swagger.json",
                     "RoutePrefix": "feed"
+                }
+            ]
+        },
+        {
+            "Key": "notification-service",
+            "Config": [
+                {
+                    "Name": "Notification API",
+                    "Version": "v1",
+                    "Url": "http://notification-service:8094/swagger/v1/swagger.json",
+                    "RoutePrefix": "notification"
                 }
             ]
         }
