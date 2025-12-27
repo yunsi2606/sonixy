@@ -1,5 +1,6 @@
 import React from 'react';
 import type { Comment } from '@/types/comment';
+import { Heart } from 'lucide-react';
 
 interface CommentItemProps {
     comment: Comment;
@@ -60,7 +61,7 @@ export function CommentItem({ comment, onReply, isReply = false }: CommentItemPr
                     </button>
                     {comment.likes > 0 && (
                         <div className="flex items-center gap-1 text-xs text-pink-500">
-                            ❤️ {comment.likes}
+                            <Heart size={12} className="fill-current" /> {comment.likes}
                         </div>
                     )}
                 </div>

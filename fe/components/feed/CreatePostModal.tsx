@@ -2,6 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { postService } from '@/services/post.service';
+import { X, User, Globe, Users, AlertTriangle, Image as ImageIcon, MapPin, Rocket } from 'lucide-react';
 
 interface CreatePostModalProps {
     isOpen: boolean;
@@ -80,7 +81,7 @@ export function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePostModalP
                         disabled={isLoading}
                         className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface transition-colors text-text-muted hover:text-text-primary"
                     >
-                        <span className="text-2xl">✕</span>
+                        <X size={24} />
                     </button>
                 </div>
 
@@ -91,7 +92,7 @@ export function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePostModalP
                         <div className="flex items-center gap-3">
                             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary via-secondary to-accent p-0.5">
                                 <div className="w-full h-full rounded-full bg-bg-secondary flex items-center justify-center text-xl">
-                                    👤
+                                    <User size={24} />
                                 </div>
                             </div>
                             <div>
@@ -134,7 +135,7 @@ export function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePostModalP
                                             }}
                                             className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center hover:bg-red-500/80 transition-colors opacity-0 group-hover:opacity-100"
                                         >
-                                            ✕
+                                            <X size={16} />
                                         </button>
                                     </div>
                                 ))}
@@ -155,7 +156,7 @@ export function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePostModalP
                                         : 'bg-surface text-text-secondary hover:bg-surface-hover'
                                         }`}
                                 >
-                                    <span className="mr-2">🌍</span>
+                                    <Globe size={18} className="mr-2" />
                                     Public
                                 </button>
                                 <button
@@ -166,7 +167,7 @@ export function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePostModalP
                                         : 'bg-surface text-text-secondary hover:bg-surface-hover'
                                         }`}
                                 >
-                                    <span className="mr-2">👥</span>
+                                    <Users size={18} className="mr-2" />
                                     Followers
                                 </button>
                             </div>
@@ -176,7 +177,7 @@ export function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePostModalP
                         {error && (
                             <div className="card bg-red-500/10 border-red-500/30 p-4 animate-[var(--animate-scale-in)]">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xl">⚠️</span>
+                                    <AlertTriangle size={24} className="text-red-400" />
                                     <p className="text-red-400 font-medium">{error}</p>
                                 </div>
                             </div>
@@ -199,14 +200,14 @@ export function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePostModalP
                                     className="w-12 h-12 rounded-xl flex items-center justify-center bg-surface hover:bg-primary/20 hover:text-primary transition-all group"
                                     title="Add Media"
                                 >
-                                    <span className="text-2xl group-hover:scale-110 transition-transform">📷</span>
+                                    <ImageIcon size={24} className="group-hover:scale-110 transition-transform" />
                                 </button>
                                 <button
                                     type="button"
                                     className="w-12 h-12 rounded-xl flex items-center justify-center bg-surface hover:bg-secondary/20 hover:text-secondary transition-all group"
                                     title="Add Location"
                                 >
-                                    <span className="text-2xl group-hover:scale-110 transition-transform">📍</span>
+                                    <MapPin size={24} className="group-hover:scale-110 transition-transform" />
                                 </button>
                             </div>
 
@@ -229,7 +230,7 @@ export function CreatePostModal({ isOpen, onClose, onSuccess }: CreatePostModalP
                                             Posting...
                                         </span>
                                     ) : (
-                                        <span>Post 🚀</span>
+                                        <span className="flex items-center gap-2">Post <Rocket size={18} /></span>
                                     )}
                                 </button>
                             </div>

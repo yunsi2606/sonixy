@@ -1,3 +1,5 @@
+import { Rocket, BookOpen, Layers, Zap, Palette, Settings, Monitor, Check } from 'lucide-react';
+
 export default function Home() {
   return (
     <main className="relative z-10 w-full">
@@ -18,11 +20,11 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12">
-            <button className="btn-primary text-lg px-10 py-4 shadow-[var(--shadow-neon)] hover:shadow-[0_0_40px_rgba(0,229,255,0.6)] transition-all duration-300">
-              Get Started 🚀
+            <button className="btn-primary text-lg px-10 py-4 shadow-[var(--shadow-neon)] hover:shadow-[0_0_40px_rgba(0,229,255,0.6)] transition-all duration-300 flex items-center justify-center gap-2">
+              Get Started <Rocket size={20} />
             </button>
-            <button className="glass-base px-10 py-4 rounded-full font-semibold hover:bg-white/10 transition-all">
-              View Docs 📚
+            <button className="glass-base px-10 py-4 rounded-full font-semibold hover:bg-white/10 transition-all flex items-center justify-center gap-2">
+              View Docs <BookOpen size={20} />
             </button>
           </div>
         </section>
@@ -33,8 +35,8 @@ export default function Home() {
             className="glass-float rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 animate-[var(--animate-fade-up)]"
             style={{ animationDelay: '0.1s' }}
           >
-            <div className="w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-blue-500 flex items-center justify-center text-4xl shadow-[var(--shadow-neon)]">
-              🏗️
+            <div className="w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br from-[var(--color-primary)] to-blue-500 flex items-center justify-center text-white shadow-[var(--shadow-neon)]">
+              <Layers size={32} />
             </div>
             <h3 className="text-2xl font-bold mb-4 text-white">Microservices</h3>
             <p className="text-[var(--color-text-secondary)] leading-relaxed">
@@ -46,8 +48,8 @@ export default function Home() {
             className="glass-float rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 animate-[var(--animate-fade-up)]"
             style={{ animationDelay: '0.2s' }}
           >
-            <div className="w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br from-[var(--color-secondary)] to-purple-500 flex items-center justify-center text-4xl shadow-[var(--shadow-soft)]">
-              ⚡
+            <div className="w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br from-[var(--color-secondary)] to-purple-500 flex items-center justify-center text-white shadow-[var(--shadow-soft)]">
+              <Zap size={32} />
             </div>
             <h3 className="text-2xl font-bold mb-4 text-white">Performance</h3>
             <p className="text-[var(--color-text-secondary)] leading-relaxed">
@@ -59,8 +61,8 @@ export default function Home() {
             className="glass-float rounded-2xl p-8 hover:-translate-y-2 transition-transform duration-300 animate-[var(--animate-fade-up)]"
             style={{ animationDelay: '0.3s' }}
           >
-            <div className="w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br from-pink-500 to-[var(--color-primary)] flex items-center justify-center text-4xl shadow-[var(--shadow-soft)]">
-              🎨
+            <div className="w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br from-pink-500 to-[var(--color-primary)] flex items-center justify-center text-white shadow-[var(--shadow-soft)]">
+              <Palette size={32} />
             </div>
             <h3 className="text-2xl font-bold mb-4 text-white">Premium Design</h3>
             <p className="text-[var(--color-text-secondary)] leading-relaxed">
@@ -78,15 +80,15 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-12">
             <div className="space-y-6">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-blue-500 flex items-center justify-center shadow-[var(--shadow-neon)]">
-                  <span className="text-2xl">⚙️</span>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--color-primary)] to-blue-500 flex items-center justify-center shadow-[var(--shadow-neon)] text-white">
+                  <Settings size={24} />
                 </div>
                 <h4 className="text-2xl font-bold text-white">Backend</h4>
               </div>
               <ul className="space-y-4">
                 {['.NET 10 + ASP.NET Core', 'MongoDB with ObjectId', 'Repository + Specification Pattern', 'Swagger Documentation', 'gRPC Inter-Service Communication'].map(item => (
                   <li key={item} className="flex items-center gap-3 text-[var(--color-text-secondary)] text-lg">
-                    <span className="text-[var(--color-primary)] text-xl">✓</span>
+                    <Check size={20} className="text-[var(--color-primary)]" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -95,15 +97,15 @@ export default function Home() {
 
             <div className="space-y-6">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--color-secondary)] to-purple-600 flex items-center justify-center shadow-[var(--shadow-soft)]">
-                  <span className="text-2xl">💻</span>
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[var(--color-secondary)] to-purple-600 flex items-center justify-center shadow-[var(--shadow-soft)] text-white">
+                  <Monitor size={24} />
                 </div>
                 <h4 className="text-2xl font-bold text-white">Frontend</h4>
               </div>
               <ul className="space-y-4">
                 {['Next.js 15 (App Router)', 'TypeScript', 'Tailwind CSS v4', 'SEO Optimized', 'Premium Design System'].map(item => (
                   <li key={item} className="flex items-center gap-3 text-[var(--color-text-secondary)] text-lg">
-                    <span className="text-[var(--color-secondary)] text-xl">✓</span>
+                    <Check size={20} className="text-[var(--color-secondary)]" />
                     <span>{item}</span>
                   </li>
                 ))}

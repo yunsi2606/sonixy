@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Sidebar } from './Sidebar';
 import { RightSidebar } from './RightSidebar';
+import { Home, Globe, Plus, Bell, User } from 'lucide-react';
 
 interface GlassShellProps {
     children: React.ReactNode;
@@ -96,19 +97,19 @@ function MobileBottomNav() {
     return (
         <div className="fixed bottom-0 left-0 right-0 h-16 glass-overlay border-t border-[var(--glass-border)] flex lg:hidden items-center justify-around z-50">
             <Link href="/feed" className="flex flex-col items-center gap-1 text-[var(--color-primary)]">
-                <span className="text-xl">🏠</span>
+                <Home size={24} />
             </Link>
             <Link href="/explore" className="flex flex-col items-center gap-1 text-[var(--color-text-secondary)]">
-                <span className="text-xl">🌍</span>
+                <Globe size={24} />
             </Link>
             <button className="w-10 h-10 rounded-full bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center shadow-[var(--shadow-neon)] -mt-6 ring-4 ring-[#0B0F1A]">
-                <span className="text-white text-xl">+</span>
+                <Plus size={24} className="text-white" strokeWidth={3} />
             </button>
             <Link href="/notifications" className="flex flex-col items-center gap-1 text-[var(--color-text-secondary)]">
-                <span className="text-xl">🔔</span>
+                <Bell size={24} />
             </Link>
             <Link href={user ? `/u/${user.username}` : '/login'} className="flex flex-col items-center gap-1 text-[var(--color-text-secondary)]">
-                <span className="text-xl">👤</span>
+                <User size={24} />
             </Link>
         </div>
     );

@@ -5,6 +5,17 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import { useNotification } from '@/contexts/NotificationContext';
+import {
+    Home,
+    Globe,
+    Bookmark,
+    Bell,
+    MessageCircle,
+    Users,
+    Settings,
+    CircleHelp,
+    LogOut
+} from 'lucide-react';
 
 export function Sidebar() {
     const { user, logout } = useAuth();
@@ -26,29 +37,29 @@ export function Sidebar() {
             {/* Primary Navigation */}
             <nav className="flex flex-col gap-1">
                 <NavGroup title="MENU">
-                    <NavItem icon="🏠" name="Home" href="/feed" active />
-                    <NavItem icon="🌍" name="Explore" href="/explore" />
-                    <NavItem icon="🔖" name="Bookmarks" href="/bookmarks" />
+                    <NavItem icon={<Home size={20} />} name="Home" href="/feed" active />
+                    <NavItem icon={<Globe size={20} />} name="Explore" href="/explore" />
+                    <NavItem icon={<Bookmark size={20} />} name="Bookmarks" href="/bookmarks" />
                 </NavGroup>
 
                 <div className="h-4" />
 
                 <NavGroup title="SOCIAL">
-                    <NavItem icon="🔔" name="Notifications" href="/notifications" badge={unreadCount > 0 ? unreadCount : undefined} />
-                    <NavItem icon="💬" name="Messages" href="/messages" badge={5} />
-                    <NavItem icon="👥" name="Communities" href="/communities" />
+                    <NavItem icon={<Bell size={20} />} name="Notifications" href="/notifications" badge={unreadCount > 0 ? unreadCount : undefined} />
+                    <NavItem icon={<MessageCircle size={20} />} name="Messages" href="/messages" badge={5} />
+                    <NavItem icon={<Users size={20} />} name="Communities" href="/communities" />
                 </NavGroup>
 
                 <div className="h-4" />
 
                 <NavGroup title="SETTINGS">
-                    <NavItem icon="⚙️" name="Settings" href="/settings" />
-                    <NavItem icon="❓" name="Help" href="/help" />
+                    <NavItem icon={<Settings size={20} />} name="Settings" href="/settings" />
+                    <NavItem icon={<CircleHelp size={20} />} name="Help" href="/help" />
                     <button
                         onClick={onLogout}
                         className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[var(--color-text-secondary)] hover:bg-white/5 hover:text-red-400 transition-all duration-200"
                     >
-                        <span className="text-lg opacity-80">🚪</span>
+                        <span className="text-lg opacity-80"><LogOut size={20} /></span>
                         <span className="text-sm">Log Out</span>
                     </button>
                 </NavGroup>

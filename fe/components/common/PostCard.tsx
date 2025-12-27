@@ -2,6 +2,7 @@ import type { Post } from '@/types/api';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Lightbox } from './Lightbox';
+import { Heart, MessageCircle, Share2, MoreHorizontal, Maximize2 } from 'lucide-react';
 
 interface PostCardProps {
     post: Post;
@@ -127,7 +128,7 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
                 </div>
 
                 <button className="ml-auto p-2 text-[var(--color-text-muted)] hover:text-white rounded-full hover:bg-white/5 transition-colors">
-                    <span className="text-lg">⋯</span>
+                    <MoreHorizontal size={20} />
                 </button>
             </div>
 
@@ -165,7 +166,7 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
                                 {/* Zoom Icon Overlay */}
                                 <div className="absolute inset-0 bg-black/0 group-hover/media:bg-black/10 transition-colors flex items-center justify-center opacity-0 group-hover/media:opacity-100">
                                     <span className="bg-black/50 text-white p-2 rounded-full backdrop-blur-sm">
-                                        🔍
+                                        <Maximize2 size={20} />
                                     </span>
                                 </div>
                             </div>
@@ -177,7 +178,7 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
             {/* Actions */}
             <div className={`flex items-center ${variant === 'compact' ? 'gap-6 pt-1' : 'pt-2 border-t border-[var(--glass-border)]'}`}>
                 <ActionButton
-                    icon={post.isLiked ? "❤️" : "🤍"}
+                    icon={<Heart size={20} className={post.isLiked ? "fill-current" : ""} />}
                     count={post.likeCount}
                     onClick={() => {
                         onLike?.(post.id);
@@ -189,8 +190,8 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
                     activeColor={post.isLiked ? "text-red-500 scale-110" : "text-pink-500"}
                     isActive={post.isLiked}
                 />
-                <ActionButton icon="💬" count="Comment" onClick={() => onComment?.(post.id)} activeColor="text-[var(--color-primary)]" />
-                <ActionButton icon="📤" count="Share" onClick={handleShare} activeColor="text-[var(--color-secondary)]" className="ml-auto" />
+                <ActionButton icon={<MessageCircle size={20} />} count="Comment" onClick={() => onComment?.(post.id)} activeColor="text-[var(--color-primary)]" />
+                <ActionButton icon={<Share2 size={20} />} count="Share" onClick={handleShare} activeColor="text-[var(--color-secondary)]" className="ml-auto" />
             </div>
 
             {/* Lightbox for viewing media */}

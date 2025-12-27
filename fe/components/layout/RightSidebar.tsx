@@ -1,4 +1,5 @@
 import React from 'react';
+import { Search, ArrowUpRight, Plus } from 'lucide-react';
 
 export function RightSidebar() {
     return (
@@ -12,7 +13,7 @@ export function RightSidebar() {
                     className="w-full bg-white/5 border border-[var(--glass-border)] rounded-xl px-10 py-3 text-sm text-white placeholder-white/30 focus:border-[var(--color-primary)] focus:bg-white/10 outline-none transition-all shadow-[var(--shadow-soft)]"
                 />
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[var(--color-primary)] transition-colors">
-                    🔍
+                    <Search size={18} />
                 </div>
             </div>
 
@@ -78,7 +79,7 @@ function TrendItem({ rank, tag, count }: any) {
                     <span className="text-[10px] text-[var(--color-text-secondary)]">{count} posts</span>
                 </div>
             </div>
-            <span className="text-white/20 text-xs">↗</span>
+            <ArrowUpRight size={16} className="text-white/20" />
         </div>
     )
 }
@@ -92,7 +93,7 @@ function SuggestedUser({ name, handle, imgGradient }: any) {
                 <div className="text-xs text-[var(--color-text-muted)] truncate">{handle}</div>
             </div>
             <button className="p-1.5 rounded-lg bg-white/5 text-white hover:bg-[var(--color-primary)]/20 hover:text-[var(--color-primary)] transition-colors">
-                <span className="text-xs font-bold">+</span>
+                <Plus size={16} strokeWidth={3} />
             </button>
         </div>
     )

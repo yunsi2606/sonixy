@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { X, Send } from 'lucide-react';
 
 interface CommentInputProps {
     onSubmit: (text: string) => void;
@@ -36,7 +37,7 @@ export function CommentInput({ onSubmit, replyingTo, onCancelReply }: CommentInp
                         className="hover:text-white transition-colors"
                         title="Cancel reply"
                     >
-                        ✕
+                        <X size={12} />
                     </button>
                 </div>
             )}
@@ -60,7 +61,7 @@ export function CommentInput({ onSubmit, replyingTo, onCancelReply }: CommentInp
                     disabled={!text.trim()}
                     className="p-2 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/10 rounded-full transition-colors disabled:opacity-50 disabled:hover:bg-transparent"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    <Send size={20} />
                 </button>
             </form>
         </div>

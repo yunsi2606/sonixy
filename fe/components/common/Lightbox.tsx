@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import type { Post } from '@/types/api';
 import { CommentSection } from '@/components/comments/CommentSection';
+import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface LightboxProps {
     isOpen: boolean;
@@ -58,7 +59,7 @@ export function Lightbox({ isOpen, onClose, post, initialIndex = 0 }: LightboxPr
                 className="absolute top-4 right-4 z-[10000] p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
                 title="Close"
             >
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <X size={24} />
             </button>
 
             {/* Main Layout Container */}
@@ -77,14 +78,14 @@ export function Lightbox({ isOpen, onClose, post, initialIndex = 0 }: LightboxPr
                                 className="absolute left-4 top-1/2 -translate-y-1/2 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all opacity-0 group-hover:opacity-100"
                                 title="Previous"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                <ChevronLeft size={24} />
                             </button>
                             <button
                                 onClick={next}
                                 className="absolute right-4 top-1/2 -translate-y-1/2 z-50 p-3 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all opacity-0 group-hover:opacity-100"
                                 title="Next"
                             >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                                <ChevronRight size={24} />
                             </button>
 
                             {/* Image Counter */}
