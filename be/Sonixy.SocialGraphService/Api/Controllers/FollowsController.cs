@@ -116,4 +116,34 @@ public class FollowsController : ControllerBase
         var following = await _socialGraphService.GetFollowingAsync(userId, skip, limit);
         return Ok(following);
     }
+
+    /// <summary>
+    /// Get mutual follows (users who follow each other)
+    /// </summary>
+    [HttpGet("mutuals")]
+    [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetMutualFollows([FromQuery] int skip = 0, [FromQuery] int limit = 20)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        var mutuals = await _socialGraphService.GetMutualFollowsAsync(userId, skip, limit);
+        return Ok(mutuals);
+    }
+
+    /// <summary>
+    /// Check if target user is a mutual follow
+    /// </summary>
+    [HttpGet("{targetId}/is-mutual")]
+    [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> IsMutualFollow(string targetId)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+        var isMutual = await _socialGraphService.IsMutualFollowAsync(userId, targetId);
+        return Ok(new { isMutual });
+    }
 }

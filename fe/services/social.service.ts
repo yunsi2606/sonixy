@@ -58,5 +58,10 @@ export const socialService = {
     async getLikeCount(postId: string): Promise<number> {
         const res = await apiClient.get<{ count: number }>(`${SOCIAL_BASE}/likes/${postId}/count`);
         return res.count;
+    },
+
+    async getMutualFollows(skip: number = 0, limit: number = 20): Promise<string[]> {
+        const response = await apiClient.get<string[]>(`${SOCIAL_BASE}/follows/mutuals?skip=${skip}&limit=${limit}`);
+        return response;
     }
 };

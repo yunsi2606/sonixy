@@ -135,4 +135,43 @@ public class SocialGraphService(IFollowRepository followRepository, ILikeReposit
         var follows = await followRepository.GetFollowingAsync(userOid, explicitSkip, explicitLimit, cancellationToken);
         return follows.Select(f => f.FollowingId.ToString());
     }
+
+    public async Task<IEnumerable<string>> GetMutualFollowsAsync(string userId, int skip = 0, int limit = 20, CancellationToken cancellationToken = default)
+    {
+        if (!ObjectId.TryParse(userId, out var userOid))
+             return [];
+             
+        // Get all followers and following (for now simple intersection, might need better query optimizations later)
+        // Optimization: Get Following List, then query Check If Following Me for each.
+        // Or cleaner: MongoDB Aggregation.
+        // Given existing Repo methods, let's fetch Following (usually smaller list) and check reverse relation.
+        
+        // 1. Get who I follow (limit to 100 or higher for now to find mutuals)
+        var myFollowings = await followRepository.GetFollowingAsync(userOid, 0, 1000, cancellationToken);
+        var followingIds = myFollowings.Select(f => f.FollowingId).ToList();
+        
+        var mutuals = new List<string>();
+        
+        foreach (var fid in followingIds)
+        {
+            // Check if this person follows me back
+            if (await followRepository.IsFollowingAsync(fid, userOid, cancellationToken))
+            {
+                mutuals.Add(fid.ToString());
+            }
+        }
+        
+        return mutuals.Skip(skip).Take(limit);
+    }
+
+    public async Task<bool> IsMutualFollowAsync(string user1, string user2, CancellationToken cancellationToken = default)
+    {
+        if (!ObjectId.TryParse(user1, out var uid1) || !ObjectId.TryParse(user2, out var uid2))
+            return false;
+
+        var follow1 = await followRepository.IsFollowingAsync(uid1, uid2, cancellationToken);
+        var follow2 = await followRepository.IsFollowingAsync(uid2, uid1, cancellationToken);
+
+        return follow1 && follow2;
+    }
 }

@@ -20,6 +20,9 @@ service SocialGraphService {
   
   // Check if user liked a post
   rpc HasLiked (HasLikedRequest) returns (HasLikedResponse);
+
+  // Check reciprocal follow status
+  rpc IsMutualFollow (IsMutualFollowRequest) returns (IsMutualFollowResponse);
 }
 
 message GetFollowingRequest {
@@ -64,4 +67,13 @@ message HasLikedRequest {
 
 message HasLikedResponse {
   bool has_liked = 1;
+}
+
+message IsMutualFollowRequest {
+  string user_id_1 = 1;
+  string user_id_2 = 2;
+}
+
+message IsMutualFollowResponse {
+  bool is_mutual = 1;
 }

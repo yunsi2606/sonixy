@@ -78,4 +78,19 @@ public class SocialGraphGrpcService(ISocialGraphService socialGraphService)
             HasLiked = hasLiked
         };
     }
+
+    public override async Task<IsMutualFollowResponse> IsMutualFollow(
+        IsMutualFollowRequest request,
+        ServerCallContext context)
+    {
+        var isMutual = await socialGraphService.IsMutualFollowAsync(
+            request.UserId1,
+            request.UserId2,
+            context.CancellationToken);
+
+        return new IsMutualFollowResponse
+        {
+            IsMutual = isMutual
+        };
+    }
 }

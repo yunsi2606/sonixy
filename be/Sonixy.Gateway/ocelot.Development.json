@@ -188,6 +188,51 @@
                 "PeriodTimespan": 60,
                 "Limit": 200
             }
+        },
+        {
+            "DownstreamPathTemplate": "/hubs/chat/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5015
+                }
+            ],
+            "UpstreamPathTemplate": "/hubs/chat/{everything}",
+            "UpstreamHttpMethod": [
+                "GET",
+                "POST",
+                "OPTIONS"
+            ],
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer"
+            },
+            "Key": "chat-hub",
+            "Priority": 0,
+            "RateLimitOptions": {
+                "EnableRateLimiting": false
+            }
+        },
+        {
+            "DownstreamPathTemplate": "/api/chat/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5015
+                }
+            ],
+            "UpstreamPathTemplate": "/api/chat/{everything}",
+            "UpstreamHttpMethod": [
+                "GET",
+                "PUT",
+                "POST",
+                "DELETE"
+            ],
+            "Key": "chat-service",
+            "AuthenticationOptions": {
+                "AuthenticationProviderKey": "Bearer"
+            }
         }
     ],
     "SwaggerEndPoints": [
@@ -265,6 +310,17 @@
                     "Version": "v1",
                     "Url": "http://notification-service:8094/swagger/v1/swagger.json",
                     "RoutePrefix": "notification"
+                }
+            ]
+        },
+        {
+            "Key": "chat-service",
+            "Config": [
+                {
+                    "Name": "Chat API",
+                    "Version": "v1",
+                    "Url": "http://localhost:5015/swagger/v1/swagger.json",
+                    "RoutePrefix": "chat"
                 }
             ]
         }
