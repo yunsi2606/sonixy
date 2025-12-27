@@ -166,9 +166,10 @@ body {
   animation-delay: 300ms;
 }
 
-/* Scrollbar */
+/* Global Scrollbar (Main Feed) */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -182,4 +183,26 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+/* Custom Scrollbar Utility */
+@utility custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 4px;
+    /* Thinner for sidebars */
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    /* Increased opacity from 0.1 to 0.2 */
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4);
+    /* Increased opacity from 0.2 to 0.4 */
+  }
 }

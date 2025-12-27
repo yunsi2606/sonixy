@@ -48,15 +48,15 @@ export const GlassShell: React.FC<GlassShellProps> = ({ children }) => {
                     </header>
 
                     {/* Left Sidebar (Sticky/Fixed Zone) */}
-                    <aside className="hidden lg:flex flex-col h-full border-r border-[var(--glass-border)] bg-black/5 backdrop-blur-sm">
-                        <div className="h-20 flex items-center px-6">
+                    <aside className="hidden lg:flex flex-col h-full border-r border-[var(--glass-border)] bg-black/5 backdrop-blur-sm overflow-hidden">
+                        <div className="h-20 flex items-center px-6 shrink-0">
                             <div className="flex items-center gap-2">
                                 <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[var(--color-primary)] to-[var(--color-secondary)] flex items-center justify-center text-white font-bold text-lg shadow-[var(--shadow-neon)]">S</div>
                                 <span className="font-bold text-xl tracking-tight bg-gradient-to-r from-white to-white/70 bg-clip-text text-transparent">Sonixy</span>
                             </div>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto custom-scrollbar px-4 pb-4">
+                        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-4 pb-4 overscroll-y-contain">
                             <Sidebar />
                         </div>
                     </aside>
@@ -69,8 +69,8 @@ export const GlassShell: React.FC<GlassShellProps> = ({ children }) => {
                     </main>
 
                     {/* Right Sidebar (Sticky/Fixed Zone) */}
-                    <aside className="hidden xl:flex flex-col h-full border-l border-[var(--glass-border)] bg-black/5 backdrop-blur-sm">
-                        <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+                    <aside className="hidden xl:flex flex-col h-full border-l border-[var(--glass-border)] bg-black/5 backdrop-blur-sm overflow-hidden">
+                        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-6 overscroll-y-contain">
                             <RightSidebar />
                         </div>
                     </aside>
