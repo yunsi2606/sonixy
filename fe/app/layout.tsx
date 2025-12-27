@@ -21,6 +21,8 @@ export const metadata: Metadata = {
   },
 }
 
+import { GlobalChatWidget } from '@/components/chat/GlobalChatWidget';
+
 export default function RootLayout({
   children,
 }: {
@@ -32,6 +34,7 @@ export default function RootLayout({
         <Providers>
           <GlassShell>
             {children}
+            <GlobalChatWidget />
           </GlassShell>
         </Providers>
       </body>
