@@ -92,6 +92,20 @@
 
 ---
 
+### 6. **Sonixy.NotificationService** (Port 8094)
+**Database**: `sonixy_notifications`
+
+**Endpoints**:
+- `GET /hubs/notifications` - SignalR Hub
+- `GET /api/notifications` - Get user notifications
+
+**Features**:
+- Real-time updates via SignalR
+- System events integration
+- Persistent notification history
+
+---
+
 ## 🏗️ Running the Services
 
 ### Run All Services (Recommended)
@@ -111,6 +125,7 @@ docker-compose up -d --build
 - **Social**: http://localhost:5011
 - **Analytics**: http://localhost:5012
 - **Feed**: http://localhost:5013
+- **Notification**: http://localhost:5014
 
 ### Run Locally (Advanced)
 

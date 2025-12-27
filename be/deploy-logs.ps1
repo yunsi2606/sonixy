@@ -33,7 +33,7 @@ if ($Service -eq "") {
 
 Write-Host ""
 Write-Host "Available services:" -ForegroundColor Cyan
-Write-Host "  mongodb, identity-service, user-service, post-service, social-service, gateway" -ForegroundColor White
+Write-Host "  mongodb, identity-service, user-service, post-service, social-service, gateway, notification-service" -ForegroundColor White
 Write-Host ""
 Write-Host "Usage examples:" -ForegroundColor Yellow
 Write-Host "  .\deploy-logs.ps1                    # Show last 100 lines from all services" -ForegroundColor White

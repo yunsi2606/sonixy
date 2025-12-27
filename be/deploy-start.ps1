@@ -60,6 +60,7 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "  User:       http://localhost:5009" -ForegroundColor White
     Write-Host "  Post:       http://localhost:5010" -ForegroundColor White
     Write-Host "  Social:     http://localhost:5011" -ForegroundColor White
+    Write-Host "  Notification: http://localhost:5014" -ForegroundColor White
     Write-Host "  MongoDB:    mongodb://localhost:27017" -ForegroundColor White
     
     Write-Host ""

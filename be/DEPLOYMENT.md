@@ -80,12 +80,12 @@ docker-compose down -v  # ⚠️ WARNING: Deletes all database data!
 │  ┌──────┴───────┬──────────┬──────────┬──────────┬──────────┐ │
 │  │              │          │          │          │          │ │
 │  ▼              ▼          ▼          ▼          ▼          ▼ │
-│ ┌────┐      ┌────┐    ┌────┐    ┌────┐    ┌────┐    ┌────┐    │
-│ │ID  │:5000 │User│    │Post│    │Soc │    │Ana │    │Feed│    │
-│ │Svc │      │Svc │    │Svc │    │Svc │    │Svc │    │Svc │    │
-│ └──┬─┘      └──┬─┘    └──┬─┘    └──┬─┘    └──┬─┘    └──┬─┘    │
-│    │           │         │         │          │          │      │
-│    └───────────┴─────────┴─────────┴──────────┴──────────┘      │
+│ ┌────┐      ┌────┐    ┌────┐    ┌────┐    ┌────┐    ┌────┐    ┌────┐    │
+│ │ID  │:5000 │User│    │Post│    │Soc │    │Ana │    │Feed│    │Noti│    │
+│ │Svc │      │Svc │    │Svc │    │Svc │    │Svc │    │Svc │    │Svc │    │
+│ └──┬─┘      └──┬─┘    └──┬─┘    └──┬─┘    └──┬─┘    └──┬─┘    └──┬─┘    │
+│    │           │         │         │          │          │           │      │
+│    └───────────┴─────────┴─────────┴──────────┴──────────┴───────────┘      │
 │                │                                                │
 │         ┌──────▼──────┐                                         │
 │         │   Gateway   │ :7200                                   │
@@ -112,6 +112,7 @@ docker-compose down -v  # ⚠️ WARNING: Deletes all database data!
 | Social | 8091 | 5011 | http://localhost:5011 |
 | Analytics | 8092 | 5012 | http://localhost:5012 |
 | Feed | 8093 | 5013 | http://localhost:5013 |
+| Notification | 8094 | 5014 | http://localhost:5014 |
 | MongoDB | 27017 | 27017 | mongodb://localhost:27017 |
 | Redis | 6379 | 6379 | redis://localhost:6379 |
 | RabbitMQ | 5672/15672 | 5673/15673 | http://localhost:15673 |
@@ -144,6 +145,7 @@ Each service has Swagger UI:
 - **Social**: http://localhost:5011 - Follow, likes
 - **Analytics**: http://localhost:5012 - Event Logging
 - **Feed**: http://localhost:5013 - Personalized Timeline
+- **Notification**: http://localhost:5014 - Real-time Alerts
 - **Gateway**: http://localhost:5100 - Main API endpoint
 
 ---
