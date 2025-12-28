@@ -83,9 +83,16 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
             // Event Listeners
             connection.on('ReceiveMessage', (message: Message) => {
                 const convId = message.conversationId;
+                const currentUserId = Cookies.get('userId');
+
+                // If I sent it, I already added it via optimistic update.
+                // Just in case, we check ID too, but ignoring by Sender is safer for "echo" messages 
+                // IF we trust optimistic update is always called.
+                if (message.senderId === currentUserId) return;
+
                 setMessages(prev => {
                     const existing = prev.get(convId) || [];
-                    // Avoid duplicates
+                    // Avoid duplicates by ID (double safety)
                     if (existing.some(m => m.id === message.id)) return prev;
 
                     const updated = [...existing, message]; // Append NEW message to end
@@ -120,6 +127,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     const addMessage = (conversationId: string, message: Message) => {
         setMessages(prev => {
             const existing = prev.get(conversationId) || [];
+            if (existing.some(m => m.id === message.id)) return prev;
             return new Map(prev).set(conversationId, [...existing, message]);
         });
     };

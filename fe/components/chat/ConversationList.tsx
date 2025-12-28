@@ -15,11 +15,12 @@ interface ConversationListProps {
 }
 
 export const ConversationList: React.FC<ConversationListProps> = ({ onSelect, compact }) => {
-    const { activeConversationId, setActiveConversationId, typingUsers, userMap, upsertUsers } = useChat();
+    const { activeConversationId, setActiveConversationId, typingUsers, userMap, upsertUsers, messages } = useChat();
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [mutualFollows, setMutualFollows] = useState<string[]>([]); // Store IDs of mutual follows
     const [isLoading, setIsLoading] = useState(true);
     const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+    const [newConversationId, setNewConversationId] = useState<string | null>(null);
 
     useEffect(() => {
         const loadCurrentUser = async () => {
@@ -30,6 +31,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({ onSelect, co
     }, []);
 
     useEffect(() => {
+        if (!currentUserId) return; // Wait for user ID
+
         const fetchData = async () => {
             try {
                 const [convs, mutuals] = await Promise.all([
@@ -58,7 +61,40 @@ export const ConversationList: React.FC<ConversationListProps> = ({ onSelect, co
             }
         };
         fetchData();
-    }, []);
+    }, [currentUserId]);
+
+    // Real-time: Listen for new messages in conversations we don't have yet
+    useEffect(() => {
+        if (!currentUserId || isLoading) return;
+
+        messages.forEach((msgs, convId) => {
+            const exists = conversations.some(c => c.id === convId);
+            if (!exists) {
+                // Fetch the new conversation
+                chatService.getConversations().then(async (latestConvs) => {
+                    const newConv = latestConvs.find(c => c.id === convId);
+                    if (newConv) {
+                        setConversations(prev => [newConv, ...prev]);
+                        setNewConversationId(convId);
+                        setTimeout(() => setNewConversationId(null), 3000); // Clear animation after 3s
+
+                        // Also fetch users for this new conv
+                        const userIdsToFetch = new Set<string>();
+                        newConv.participants.forEach(p => userIdsToFetch.add(p.userId));
+                        // Filter out known
+                        const unknownIds = Array.from(userIdsToFetch).filter(id => !userMap.has(id));
+
+                        if (unknownIds.length > 0) {
+                            const newUsers = await userService.getUsersBatch(unknownIds);
+                            const map = new Map<string, User>();
+                            newUsers.forEach(u => map.set(u.id, u));
+                            upsertUsers(map);
+                        }
+                    }
+                });
+            }
+        });
+    }, [messages, conversations, currentUserId, isLoading, userMap]);
 
     // Helper to start chat with mutual follow
     const handleStartChat = async (userId: string) => {
@@ -205,8 +241,16 @@ export const ConversationList: React.FC<ConversationListProps> = ({ onSelect, co
 
             <div className="flex-1 overflow-y-auto custom-scrollbar">
                 {isLoading && (
-                    <div className="p-4 text-center text-[var(--color-text-muted)] text-sm">
-                        Loading conversations...
+                    <div className="p-4 space-y-4">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="flex gap-3 animate-pulse">
+                                <div className="w-10 h-10 rounded-full bg-white/10" />
+                                <div className="flex-1 space-y-2 py-1">
+                                    <div className="h-3 bg-white/10 rounded w-1/3" />
+                                    <div className="h-2 bg-white/10 rounded w-1/2" />
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 )}
 
@@ -256,6 +300,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({ onSelect, co
                                     ? "bg-[var(--color-primary)]/10 border-[var(--color-primary)]"
                                     : "border-transparent hover:bg-white/5"
                                 }
+                                ${newConversationId === conv.id ? "animate-pulse bg-green-500/10" : ""}
                             `}
                         >
                             {/* Avatar */}

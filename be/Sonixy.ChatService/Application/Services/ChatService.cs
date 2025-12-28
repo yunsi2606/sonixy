@@ -33,6 +33,18 @@ public class ChatService(
             var isMutual = await socialGraphClient.IsMutualFollowAsync(targetUserId);
             if (!isMutual)
                 throw new InvalidOperationException("You can only chat with mutual follows");
+            
+            // Check if conversation already exists
+            // Since we need to match exact participants for Private chat
+            var creatorConversations = await GetUserConversationsAsync(creatorId);
+            var existingPrivateConv = creatorConversations.FirstOrDefault(c => 
+                c.Type == ConversationType.Private && 
+                c.Participants.Any(p => p.UserId == targetUserId));
+
+            if (existingPrivateConv != null)
+            {
+                return existingPrivateConv;
+            }
         }
         else if (dto.Type == ConversationType.Group)
         {
@@ -78,8 +90,21 @@ public class ChatService(
         var conversationIds = userParticipations.Select(x => x.ConversationId).ToList();
         var convSpec = new ConversationsByIdsSpec(conversationIds);
         var conversations = await chatRepo.FindAsync(convSpec);
+
+        // Fetch ALL participants for these conversations to populate the DTOs correctly
+        var allParticipantsSpec = new ChatParticipantsByConversationIdsSpec(conversationIds);
+        var allParticipants = await participantRepo.FindAsync(allParticipantsSpec);
+
+        var dtos = conversations.Select(MapToConversationDto).ToList();
+        foreach (var dto in dtos)
+        {
+            dto.Participants = allParticipants
+                .Where(p => p.ConversationId == dto.Id)
+                .Select(MapToParticipantDto)
+                .ToList();
+        }
         
-        return conversations.Select(MapToConversationDto).ToList();
+        return dtos;
     }
 
     public async Task<MessageDto> SendMessageAsync(string senderId, SendMessageDto dto)
