@@ -277,9 +277,10 @@ services:
     restart: always
     ports:
       - "5015:8095"
+      - "5195:8195"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_URLS=http://+:8095
+      - ASPNETCORE_URLS=http://+:8095;http://+:8195
       - CORS__AllowOrigins=https://sonixy.nhatcuong.io.vn
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Username=${RABBITMQ_USER:-guest}

@@ -37,9 +37,18 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<ISocialGraphClient, SocialGraphClient>();
 builder.Services.AddGrpcClient<Sonixy.Shared.Protos.SocialGraphService.SocialGraphServiceClient>(o =>
 {
-    var url = builder.Configuration["SocialServiceUrl"] ?? "http://social-service:8091";
-    o.Address = new Uri(url);
+    o.Address = new Uri("http://social-service:8191");
 });
+
+// Authorization
+builder.Services.AddAuthorization();
+
+// gRPC
+builder.Services.AddGrpc();
+
+// Controllers
+builder.Services.AddControllers();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
