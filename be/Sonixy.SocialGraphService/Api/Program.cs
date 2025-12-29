@@ -6,12 +6,28 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Sonixy.SocialGraphService.Api.GrpcServices;
 using Sonixy.SocialGraphService.Application.Services;
 using Sonixy.SocialGraphService.Domain.Repositories;
 using Sonixy.SocialGraphService.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // REST (nếu có)
+    options.ListenAnyIP(8091, o =>
+    {
+        o.Protocols = HttpProtocols.Http1;
+    });
+
+    // gRPC
+    options.ListenAnyIP(8191, o =>
+    {
+        o.Protocols = HttpProtocols.Http2;
+    });
+});
 
 // MongoDB Configuration
 builder.Services.Configure<MongoDbSettings>(
