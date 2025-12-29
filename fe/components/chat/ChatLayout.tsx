@@ -9,10 +9,14 @@ export const ChatLayout = () => {
     const { activeConversationId } = useChat();
 
     return (
-        <div className="flex h-full w-full glass-strong rounded-2xl overflow-hidden border border-[var(--glass-border)] shadow-2xl">
-            <ConversationList />
-            
-            <div className="flex-1 bg-[var(--color-bg-deep)]/30 backdrop-blur-sm flex flex-col min-w-0">
+        <div className="flex h-full w-full bg-[#0B0F1A] rounded-2xl overflow-hidden border border-[var(--glass-border)] shadow-2xl relative">
+            {/* Conversation List - Hidden on mobile if chat is active */}
+            <ConversationList
+                className={`${activeConversationId ? 'hidden md:flex' : 'flex w-full'} md:w-80 border-r border-[var(--glass-border)]`}
+            />
+
+            {/* Chat Window - Hidden on mobile if NO chat is active */}
+            <div className={`${!activeConversationId ? 'hidden md:flex' : 'flex'} flex-1 bg-[var(--color-bg-deep)] flex-col min-w-0`}>
                 {activeConversationId ? (
                     <ChatWindow conversationId={activeConversationId} />
                 ) : (

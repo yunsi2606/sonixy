@@ -12,9 +12,10 @@ import { authService } from '@/services/auth.service';
 interface ConversationListProps {
     onSelect?: () => void;
     compact?: boolean;
+    className?: string; // Enhancement: allow custom className
 }
 
-export const ConversationList: React.FC<ConversationListProps> = ({ onSelect, compact }) => {
+export const ConversationList: React.FC<ConversationListProps> = ({ onSelect, compact, className = "" }) => {
     const { activeConversationId, setActiveConversationId, typingUsers, userMap, upsertUsers, messages } = useChat();
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [mutualFollows, setMutualFollows] = useState<string[]>([]); // Store IDs of mutual follows
@@ -175,7 +176,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({ onSelect, co
     };
 
     return (
-        <div className={`flex flex-col h-full bg-transparent ${compact ? "w-full" : "w-80 border-r border-[var(--glass-border)]"}`}>
+        <div className={`flex flex-col h-full bg-transparent ${className} ${!className && !compact ? "w-80 border-r border-[var(--glass-border)]" : ""}`}>
             {!compact && (
                 <div className="p-4 border-b border-[var(--glass-border)] flex justify-between items-center text-[var(--color-text-primary)]">
                     <span className="font-bold text-lg">Messages</span>

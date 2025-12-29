@@ -54,6 +54,7 @@ A production-ready microservice-based social web application demonstrating clean
 
 ### Prerequisites
 - [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [Node.js 18+](https://nodejs.org/)
 - [MongoDB](https://www.mongodb.com/try/download/community)
 
@@ -164,4 +165,4 @@ MIT License - See [LICENSE](LICENSE) for details
 
 **Built with clean code, scalable architecture, and attention to detail** ✨
 
-**Stack:** .NET 10 • MongoDB • Next.js 15 • TypeScript • Tailwind CSS v4
+**Stack:** .NET 8/10 • MongoDB • Next.js 15 • TypeScript • Tailwind CSS v4

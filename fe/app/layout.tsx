@@ -34,8 +34,8 @@ export default function RootLayout({
         <Providers>
           <GlassShell>
             {children}
-            <GlobalChatWidget />
           </GlassShell>
+          <GlobalChatWidget />
         </Providers>
       </body>
     </html>
