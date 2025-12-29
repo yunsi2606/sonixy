@@ -106,6 +106,24 @@
 
 ---
 
+### 7. **Sonixy.ChatService** (Port 8095)
+**Database**: `sonixy_chat` (MongoDB)
+**Dependencies**: Redis (Presence), SocialGraphService (via gRPC)
+
+**Endpoints**:
+- `POST /api/chat/conversations` - Start private/group chat
+- `POST /api/chat/messages` - Send text/image message
+- `GET /api/chat/conversations` - List conversations
+- `GET /hubs/chat` - SignalR Hub
+
+**Features**:
+- **Real-time Messaging**: Instant delivery via SignalR
+- **Mutual Follow Enforcement**: Validates relationships via gRPC before starting private chats
+- **Unique Conversations**: Reuse existing 1-on-1 chats
+- **Group Chats**: Support for multiple participants
+
+---
+
 ## 🏗️ Running the Services
 
 ### Run All Services (Recommended)
@@ -126,6 +144,7 @@ docker-compose up -d --build
 - **Analytics**: http://localhost:5012
 - **Feed**: http://localhost:5013
 - **Notification**: http://localhost:5014
+- **Chat**: http://localhost:5015
 
 ### Run Locally (Advanced)
 

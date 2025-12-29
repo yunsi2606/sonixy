@@ -42,43 +42,52 @@ sequenceDiagram
 
 ---
 
-## 2. Future Chat System (Planned)
+## 2. Chat System
 
-The Chat System will extend the existing real-time infrastructure, reusing the established patterns for scalability and reliability.
+The Chat System is now fully implemented, leveraging SignalR for real-time delivery and gRPC for inter-service validation.
 
-### 2.1 Proposed Architecture
+### 2.1 Architecture Flow
 
 ```mermaid
 sequenceDiagram
-    participant A as User A
-    participant G as Gateway
-    participant C as Chat Service
-    participant B as RabbitMQ
+    participant U as User
+    participant G as Chat Service
+    participant S as Social Service (gRPC)
     participant D as MongoDB
-    participant H as Chat Hub
-    participant R as User B
+    participant H as Chat Hub (SignalR)
+    participant R as Recipient
 
-    A->>G: POST /api/chat/messages (Rest)
-    G->>C: Forward Request
-    C->>D: Persist Message
-    C->>B: Publish MessageSentEvent
-    B->>H: Consume MessageSentEvent
-    H->>R: SignalR "ReceiveMessage" (via Group: ChatId or UserId)
+    U->>G: POST /api/chat/conversations (Start Chat)
+    G->>S: Validate Mutual Follow (gRPC)
+    alt is valid
+        G->>D: Create/Get Conversation
+        G-->>U: Return Conversation ID
+    else not mutual
+        G-->>U: 400 Bad Request
+    end
+
+    U->>G: POST /api/chat/messages
+    G->>D: Save Message
+    G->>H: Broadcast "ReceiveMessage" (Group: ChatId)
+    H->>R: Receive Message (Real-time)
+    H->>U: Receive Message (Echo/Confirmation)
 ```
 
-### 2.2 Design Principles (Shared with Notifications)
+### 2.2 Key Features Implemented
 
-1.  **Hybrid Approach**:
-    - **REST API** for sending messages (reliable, easier to validate/rate-limit).
-    - **SignalR** primarily for *receiving* updates (push model).
-2.  **Persistence First**: Messages are saved to the DB before being pushed to ensure consistency.
-3.  **Group Management**:
-    - **Notifications**: 1-to-1 (System to User). Group = `UserId`.
-    - **Chat**: 1-to-Many (User to Room). Group = `ChatId` or `ConversationId`.
-4.  **Scaling**:
-    - Use **Redis Backplane** for SignalR if scaling to multiple instances of Notification/Chat services.
+1.  **Hybrid Transport**:
+    - **REST API**: Used for all state-changing actions (sending messages, creating conversations) to ensure proper validation, rate-limiting, and response handling.
+    - **SignalR**: Used exclusively for *pushing* updates to clients. Clients do not send messages over SignalR.
+2.  **Smart Deduplication**:
+    - **Optimistic UI**: Frontend adds messages immediately.
+    - **SignalR Filtering**: Frontend filters out "echo" messages from the sender to prevent duplication, while ensuring consistency.
+3.  **Strict Privacy**:
+    - **Mutual Follow Check**: Using gRPC to synchronously check `SocialGraphService` ensures users can only DM friends.
+    - **Unique Conversations**: The system automatically detects and returns an existing private conversation if one exists, ensuring data integrity.
+4.  **Presence**:
+    - Redis is used to track online users (planned for expansion).
 
-### 2.3 Data Model (Draft)
+### 2.3 Data Model
 
 **Message**:
 - `Id`: ObjectId
@@ -87,9 +96,9 @@ sequenceDiagram
 - `Content`: string
 - `Type`: "text" | "image" | "system"
 - `CreatedAt`: DateTime
-- `ReadBy`: List<string>
 
 **Conversation**:
 - `Id`: ObjectId
-- `Participants`: List<string> (UserIds)
+- `Type`: "private" | "group"
+- `Participants`: List<ChatParticipant>
 - `LastMessageAt`: DateTime

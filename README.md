@@ -25,6 +25,7 @@ A production-ready microservice-based social web application demonstrating clean
 ┌────────────────────────────────────────────────────────┐
 │  IdentityService  │  UserService  │  PostService       │
 │  SocialGraphService │ AnalyticsService │ FeedService   │
+│  NotificationService │ ChatService                     │
 └────────────────────────────────────────────────────────┘
       ↓
 ┌────────────────────────────────────────────────────────┐
@@ -85,6 +86,16 @@ dotnet run
 cd be/Sonixy.FeedService
 dotnet run
 # Swagger: http://localhost:8093
+
+# NotificationService
+cd be/Sonixy.NotificationService
+dotnet run
+# Swagger: http://localhost:8094
+
+# ChatService
+cd be/Sonixy.ChatService/Api
+dotnet run
+# Swagger: http://localhost:8095
 ```
 
 ### Frontend
@@ -107,7 +118,9 @@ sonixy/
 │   ├── Sonixy.Gateway/             # Ocelot API Gateway
 │   ├── Sonixy.UserService/         # User Profiles
 │   ├── Sonixy.PostService/         # Content
-│   └── Sonixy.SocialGraphService/  # Social Graph
+│   ├── Sonixy.SocialGraphService/  # Social Graph
+│   ├── Sonixy.NotificationService/ # Real-time Notifications (SignalR)
+│   └── Sonixy.ChatService/         # Real-time Chat (SignalR/gRPC)
 │
 └── fe/
 ```
@@ -129,9 +142,15 @@ sonixy/
 - [x] API Gateway (Ocelot)
 
 ### Phase 3: Advanced Features
-- [ ] Real-time updates (SignalR)
+- [x] Real-time updates (SignalR)
 - [ ] Kubernetes deployment (Helm Charts)
 - [ ] Recommendation Engine (ML.NET)
+
+## 📚 Documentation
+
+- [**Backend Guide**](be/BACKEND_GUIDE.md) - Detailed service endpoints, ports, and troubleshooting.
+- [**Real-time Architecture**](be/REALTIME_ARCHITECTURE.md) - SignalR, Chat, and Notification system design.
+- [**Deployment Guide**](be/DEPLOYMENT.md) - Docker and production setup.
 
 ## 🤝 Contributing
 
