@@ -8,6 +8,7 @@ import { UserPlus } from 'lucide-react';
 import { userService } from '@/services/user.service';
 import { User } from '@/types/api';
 import { authService } from '@/services/auth.service';
+import { Avatar } from '@/components/ui/Avatar';
 
 interface ConversationListProps {
     onSelect?: () => void;
@@ -306,17 +307,17 @@ export const ConversationList: React.FC<ConversationListProps> = ({ onSelect, co
                         >
                             {/* Avatar */}
                             <div className="relative shrink-0">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] p-0.5">
-                                    <div className="w-full h-full rounded-full bg-[var(--color-bg-deep)] flex items-center justify-center overflow-hidden">
-                                        {avatar ? (
-                                            <img src={avatar} alt={name} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <span className="font-bold text-sm text-[var(--color-text-primary)]">
-                                                {name[0]}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
+                                <Avatar
+                                    src={avatar}
+                                    alt={name}
+                                    className="p-0.5" // preserves the padding for the ring effect if needed, though Avatar has its own ring logic.
+                                    // The original had a gradient border: bg-gradient-to-br from-[var(--color-primary)] to-[var(--color-secondary)] p-0.5
+                                    // Our new Avatar component handles rings beautifully.
+                                    // Let's rely on standard Avatar, but if we want the exact gradient style of THIS component which used 'to-br', 
+                                    // whereas ui/Avatar uses 'to-tr', it's fine to standardize on 'to-tr' which is in ui/Avatar.
+                                    hasRing={true}
+                                    size="md"
+                                />
                                 {/* Online Status (Mock) */}
                                 <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-500 border-2 border-[var(--color-bg-deep)]"></div>
                             </div>
