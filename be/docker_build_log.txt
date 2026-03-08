@@ -1,0 +1,65 @@
+﻿#1 [internal] load local bake definitions
+#1 reading from stdin 611B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 1.04kB 0.0s done
+#2 DONE 0.1s
+
+#3 [internal] load metadata for mcr.microsoft.com/dotnet/sdk:8.0
+#3 DONE 0.1s
+
+#4 [internal] load metadata for mcr.microsoft.com/dotnet/aspnet:8.0
+#4 DONE 0.1s
+
+#5 [internal] load .dockerignore
+#5 transferring context: 520B done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 DONE 0.0s
+
+#7 [base 1/2] FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:88c86e5469c2b69969e07343193fd3dbe4ff6936d95b994dbfa27348299af111
+#7 resolve mcr.microsoft.com/dotnet/aspnet:8.0@sha256:88c86e5469c2b69969e07343193fd3dbe4ff6936d95b994dbfa27348299af111 0.1s done
+#7 DONE 0.1s
+
+#8 [base 2/2] WORKDIR /app
+#8 CACHED
+
+#9 [final 1/2] WORKDIR /app
+#9 CACHED
+
+#10 [build  1/10] FROM mcr.microsoft.com/dotnet/sdk:8.0@sha256:bfb6ed602caa605141700aea7dc7d42574b74b704368e67d683c71a002123808
+#10 resolve mcr.microsoft.com/dotnet/sdk:8.0@sha256:bfb6ed602caa605141700aea7dc7d42574b74b704368e67d683c71a002123808 0.1s done
+#10 DONE 0.1s
+
+#6 [internal] load build context
+#6 transferring context: 27.65kB 0.1s done
+#6 DONE 0.1s
+
+#11 [build  2/10] WORKDIR /src
+#11 CACHED
+
+#12 [build  3/10] COPY [Sonixy.SearchService/Api/Sonixy.SearchService.Api.csproj, Sonixy.SearchService/Api/]
+#12 CACHED
+
+#13 [build  4/10] COPY [Sonixy.SearchService/Application/Sonixy.SearchService.Application.csproj, Sonixy.SearchService/Application/]
+#13 CACHED
+
+#14 [build  5/10] COPY [Sonixy.SearchService/Infrastructure/Sonixy.SearchService.Infrastructure.csproj, Sonixy.SearchService/Infrastructure/]
+#14 CACHED
+
+#15 [build  6/10] COPY [Sonixy.Shared/Sonixy.Shared.csproj, Sonixy.Shared/]
+#15 CACHED
+
+#16 [build  7/10] RUN dotnet restore "Sonixy.SearchService/Api/Sonixy.SearchService.Api.csproj"
+#16 2.610   Determining projects to restore...
+#16 3.355 /usr/share/dotnet/sdk/8.0.418/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.TargetFrameworkInference.targets(166,5): error NETSDK1045: The current .NET SDK does not support targeting .NET 10.0.  Either target .NET 8.0 or lower, or use a version of the .NET SDK that supports .NET 10.0. Download the .NET SDK from https://aka.ms/dotnet/download [/src/Sonixy.Shared/Sonixy.Shared.csproj]
+#16 3.363 /usr/share/dotnet/sdk/8.0.418/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.TargetFrameworkInference.targets(166,5): error NETSDK1045: The current .NET SDK does not support targeting .NET 10.0.  Either target .NET 8.0 or lower, or use a version of the .NET SDK that supports .NET 10.0. Download the .NET SDK from https://aka.ms/dotnet/download [/src/Sonixy.SearchService/Api/Sonixy.SearchService.Api.csproj]
+#16 ERROR: process "/bin/sh -c dotnet restore \"Sonixy.SearchService/Api/Sonixy.SearchService.Api.csproj\"" did not complete successfully: exit code: 1
+------
+ > [build  7/10] RUN dotnet restore "Sonixy.SearchService/Api/Sonixy.SearchService.Api.csproj":
+2.610   Determining projects to restore...
+3.355 /usr/share/dotnet/sdk/8.0.418/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.TargetFrameworkInference.targets(166,5): error NETSDK1045: The current .NET SDK does not support targeting .NET 10.0.  Either target .NET 8.0 or lower, or use a version of the .NET SDK that supports .NET 10.0. Download the .NET SDK from https://aka.ms/dotnet/download [/src/Sonixy.Shared/Sonixy.Shared.csproj]
+3.363 /usr/share/dotnet/sdk/8.0.418/Sdks/Microsoft.NET.Sdk/targets/Microsoft.NET.TargetFrameworkInference.targets(166,5): error NETSDK1045: The current .NET SDK does not support targeting .NET 10.0.  Either target .NET 8.0 or lower, or use a version of the .NET SDK that supports .NET 10.0. Download the .NET SDK from https://aka.ms/dotnet/download [/src/Sonixy.SearchService/Api/Sonixy.SearchService.Api.csproj]
+------

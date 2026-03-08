@@ -3,46 +3,6 @@ version: '3.8'
 name: sonixy
 
 services:
-  # MongoDB
-  mongodb:
-    image: mongo:7.0
-    container_name: sonixy-mongodb
-    restart: always
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-SonixyAdmin123!}
-    volumes:
-      - mongodb_data:/data/db
-      - mongodb_config:/data/configdb
-    networks:
-      - sonixy-network
-    healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  # RabbitMQ (Message Broker)
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: sonixy-rabbitmq
-    restart: always
-    ports:
-      - "5673:5672" # AMQP
-      - "15673:15672" # Management UI
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
-    networks:
-      - sonixy-network
-    healthcheck:
-      test: rabbitmq-diagnostics -q ping
-      interval: 30s
-      timeout: 30s
-      retries: 3
-
   # Email Service
   email-service:
     build:
@@ -60,11 +20,9 @@ services:
       - Smtp__Username=${SMTP_USERNAME}
       - Smtp__Password=${SMTP_PASSWORD}
       - FrontendUrl=https://sonixy.nhatcuong.io.vn
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
     networks:
       - sonixy-network
+      - tools_network
 
   # Identity Service
   identity-service:
@@ -87,11 +45,10 @@ services:
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Username=${RABBITMQ_USER:-guest}
       - RabbitMQ__Password=${RABBITMQ_PASS:-guest}
-    depends_on:
-      mongodb:
-        condition: service_healthy
     networks:
       - sonixy-network
+      - database_network
+      - tools_network
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:5008/health" ]
       interval: 30s
@@ -117,16 +74,15 @@ services:
       - Jwt__SecretKey=${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast32CharactersLongForHS256}
       - Jwt__Issuer=Sonixy.IdentityService
       - Jwt__Audience=Sonixy.Client
-      - Minio__Endpoint=minio:9000
+      - Minio__Endpoint=tools-minio:9000
       - Minio__AccessKey=${MINIO_ROOT_USER:-admin}
       - Minio__SecretKey=${MINIO_ROOT_PASSWORD:-SonixyMinio123!}
       - Minio__Bucket=sonixy-users
       - Minio__PublicUrl=https://media-sonixy.nhatcuong.io.vn
-    depends_on:
-      mongodb:
-        condition: service_healthy
     networks:
       - sonixy-network
+      - database_network
+      - tools_network
 
   # Post Service
   post-service:
@@ -144,7 +100,7 @@ services:
       - CORS__AllowOrigins=https://sonixy.nhatcuong.io.vn
       - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
       - MongoDB__DatabaseName=sonixy_posts
-      - Minio__Endpoint=minio:9000
+      - Minio__Endpoint=tools-minio:9000
       - Minio__AccessKey=${MINIO_ROOT_USER:-admin}
       - Minio__SecretKey=${MINIO_ROOT_PASSWORD:-SonixyMinio123!}
       - Minio__PublicUrl=https://media-sonixy.nhatcuong.io.vn
@@ -156,11 +112,10 @@ services:
       - RabbitMQ__Password=${RABBITMQ_PASS:-guest}
     volumes:
       - ./uploads:/app/wwwroot/uploads
-    depends_on:
-      mongodb:
-        condition: service_healthy
     networks:
       - sonixy-network
+      - database_network
+      - tools_network
 
   # Social Graph Service
   social-service:
@@ -180,11 +135,10 @@ services:
       - Jwt__SecretKey=${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast32CharactersLongForHS256}
       - Jwt__Issuer=Sonixy.IdentityService
       - Jwt__Audience=Sonixy.Client
-    depends_on:
-      mongodb:
-        condition: service_healthy
     networks:
       - sonixy-network
+      - database_network
+      - tools_network
 
   # Analytics Service
   analytics-service:
@@ -204,13 +158,10 @@ services:
       - RabbitMQ__Password=${RABBITMQ_PASS:-guest}
       - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
       - MongoDB__DatabaseName=sonixy_analytics
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
     networks:
       - sonixy-network
+      - database_network
+      - tools_network
 
   # Feed Service
   feed-service:
@@ -231,13 +182,10 @@ services:
       - Redis__ConnectionString=redis:6379
       - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
       - MongoDB__DatabaseName=sonixy_feed
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     networks:
       - sonixy-network
+      - database_network
+      - tools_network
 
   # Notification Service
   notification-service:
@@ -260,13 +208,10 @@ services:
       - Jwt__SecretKey=${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast32CharactersLongForHS256}
       - Jwt__Issuer=Sonixy.IdentityService
       - Jwt__Audience=Sonixy.Client
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
     networks:
       - sonixy-network
+      - database_network
+      - tools_network
 
   # Chat Service
   chat-service:
@@ -291,15 +236,34 @@ services:
       - Jwt__SecretKey=${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast32CharactersLongForHS256}
       - Jwt__Issuer=Sonixy.IdentityService
       - Jwt__Audience=Sonixy.Client
-    depends_on:
-      rabbitmq:
-        condition: service_healthy
-      mongodb:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     networks:
       - sonixy-network
+      - database_network
+      - tools_network
+
+  # Search Service (Elasticsearch)
+  search-service:
+    build:
+      context: .
+      dockerfile: Sonixy.SearchService/Dockerfile
+    container_name: sonixy-search
+    restart: always
+    ports:
+      - "5016:8096"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8096
+      - CORS__AllowOrigins=https://sonixy.nhatcuong.io.vn
+      - Elasticsearch__Uri=http://elasticsearch:9200
+      - RabbitMQ__Host=rabbitmq
+      - RabbitMQ__Username=${RABBITMQ_USER:-guest}
+      - RabbitMQ__Password=${RABBITMQ_PASS:-guest}
+      - Jwt__SecretKey=${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast32CharactersLongForHS256}
+      - Jwt__Issuer=Sonixy.IdentityService
+      - Jwt__Audience=Sonixy.Client
+    networks:
+      - sonixy-network
+      - tools_network
 
   # API Gateway
   gateway:
@@ -322,30 +286,13 @@ services:
       - user-service
       - post-service
       - social-service
+      - analytics-service
+      - feed-service
+      - notification-service
+      - chat-service
+      - search-service
     networks:
       - sonixy-network
-
-  # MinIO (S3-compatible Object Storage)
-  minio:
-    image: minio/minio
-    container_name: sonixy-minio
-    volumes:
-      - minio_data:/data
-    ports:
-      - "9100:9000" # API for Host
-      - "9102:9001" # Console for Host
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-admin}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-SonixyMinio123!}
-      MINIO_BROWSER_REDIRECT_URL: https://media-sonixy.nhatcuong.io.vn
-    command: server /data --console-address ":9001"
-    networks:
-      - sonixy-network
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:9000/minio/health/live" ]
-      interval: 30s
-      timeout: 20s
-      retries: 3
 
   # Cloudflare Tunnel
   cloudflared:
@@ -358,40 +305,17 @@ services:
       - gateway
     networks:
       - sonixy-network
+      - tools_network
     mem_limit: 128m
     mem_reservation: 64m
     cpus: 0.25
     restart: unless-stopped
     # No ports exposed - tunnel handles everything
 
-    # Redis
-  redis:
-    image: redis:alpine
-    container_name: sonixy-redis
-    restart: always
-    ports:
-      - "6380:6379"
-    command: redis-server --save 60 1 --loglevel warning --maxmemory 512mb --maxmemory-policy allkeys-lru
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-    networks:
-      - sonixy-network
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
 networks:
   sonixy-network:
     driver: bridge
-
-volumes:
-  mongodb_data:
-    driver: local
-  mongodb_config:
-    driver: local
-  minio_data:
-    driver: local
+  database_network:
+    external: true
+  tools_network:
+    external: true

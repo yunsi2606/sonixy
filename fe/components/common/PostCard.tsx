@@ -78,7 +78,21 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
                     </div>
 
                     <p className={textClasses.hero}>
-                        {post.content}
+                        {post.content.split(/(#\w+)/g).map((chunk, i) => {
+                            if (chunk.startsWith('#')) {
+                                return (
+                                    <Link
+                                        key={i}
+                                        href={`/search?q=${encodeURIComponent(chunk)}`}
+                                        className="text-[var(--color-primary)] hover:text-[var(--color-secondary)] transition-colors inline-block"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        {chunk}
+                                    </Link>
+                                );
+                            }
+                            return chunk;
+                        })}
                     </p>
 
                     <div className="flex items-center gap-4 mt-8">
@@ -130,7 +144,21 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
             {/* Content */}
             <div className={variant === 'compact' ? 'mb-2' : 'mb-4'}>
                 <p className={textClasses[variant]}>
-                    {post.content}
+                    {post.content.split(/(#\w+)/g).map((chunk, i) => {
+                        if (chunk.startsWith('#')) {
+                            return (
+                                <Link
+                                    key={i}
+                                    href={`/search?q=${encodeURIComponent(chunk)}`}
+                                    className="text-[var(--color-primary)] hover:text-[var(--color-secondary)] transition-colors inline-block"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    {chunk}
+                                </Link>
+                            );
+                        }
+                        return chunk;
+                    })}
                 </p>
 
                 {/* Media Grid */}

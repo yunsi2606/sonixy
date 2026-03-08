@@ -5,18 +5,6 @@ export function RightSidebar() {
     return (
         <div className="flex flex-col gap-6 w-full max-w-[320px]">
 
-            {/* Search Input */}
-            <div className="relative group">
-                <input
-                    type="text"
-                    placeholder="Search..."
-                    className="w-full bg-white/5 border border-[var(--glass-border)] rounded-xl px-10 py-3 text-sm text-white placeholder-white/30 focus:border-[var(--color-primary)] focus:bg-white/10 outline-none transition-all shadow-[var(--shadow-soft)]"
-                />
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 group-focus-within:text-[var(--color-primary)] transition-colors">
-                    <Search size={18} />
-                </div>
-            </div>
-
             {/* Widget 1: Trending (Short) */}
             <div className="glass-base rounded-2xl p-5 border border-[var(--glass-border)]">
                 <div className="flex items-center justify-between mb-4">

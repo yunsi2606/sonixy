@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useNotification } from '@/contexts/NotificationContext';
 import {
     Home,
+    Search,
     Globe,
     Bookmark,
     Bell,
@@ -38,6 +39,7 @@ export function Sidebar() {
             <nav className="flex flex-col gap-1">
                 <NavGroup title="MENU">
                     <NavItem icon={<Home size={20} />} name="Home" href="/feed" active />
+                    <NavItem icon={<Search size={20} />} name="Search" href="/search" />
                     <NavItem icon={<Globe size={20} />} name="Explore" href="/explore" />
                     <NavItem icon={<Bookmark size={20} />} name="Bookmarks" href="/bookmarks" />
                 </NavGroup>

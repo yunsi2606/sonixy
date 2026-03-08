@@ -60,11 +60,19 @@ public class PostService(
         // Publish Event for Feed Service (Fan-out)
         var imageUrls = mediaItems.Select(m => $"{_minioOptions.PublicUrl}/{_minioOptions.Bucket}/{m.ObjectKey}").ToList();
         
+        // Extract hashtags from content for search indexing
+        var hashtags = System.Text.RegularExpressions.Regex
+            .Matches(dto.Content, @"#(\w+)")
+            .Select(m => m.Groups[1].Value.ToLower())
+            .Distinct()
+            .ToList();
+        
         await publishEndpoint.Publish(new PostCreatedEvent(
             post.Id.ToString(),
             post.AuthorId.ToString(),
             post.Content,
             imageUrls,
+            hashtags,
             post.CreatedAt
         ), cancellationToken);
 

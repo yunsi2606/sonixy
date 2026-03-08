@@ -41,8 +41,9 @@ export interface Post {
     likeCount: number;
     isLiked?: boolean;
     media?: { type: 'image' | 'video', url: string }[];
+    hashtags?: string[];
     createdAt: string;
-    updatedAt: string;
+    updatedAt?: string;
 }
 
 export interface CursorPage<T> {

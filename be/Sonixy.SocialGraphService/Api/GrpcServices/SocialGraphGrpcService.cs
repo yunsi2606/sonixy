@@ -93,4 +93,18 @@ public class SocialGraphGrpcService(ISocialGraphService socialGraphService)
             IsMutual = isMutual
         };
     }
+
+    public override async Task<GetSuggestedUsersResponse> GetSuggestedUsers(
+        GetSuggestedUsersRequest request,
+        ServerCallContext context)
+    {
+        var userIds = await socialGraphService.GetSuggestedUsersAsync(
+            request.UserId,
+            request.Limit,
+            context.CancellationToken);
+
+        var response = new GetSuggestedUsersResponse();
+        response.UserIds.AddRange(userIds);
+        return response;
+    }
 }

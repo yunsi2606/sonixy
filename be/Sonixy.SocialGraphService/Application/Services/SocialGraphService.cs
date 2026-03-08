@@ -174,4 +174,46 @@ public class SocialGraphService(IFollowRepository followRepository, ILikeReposit
 
         return follow1 && follow2;
     }
+
+    /// <summary>
+    /// Get suggested users using Friends-of-Friends algorithm
+    /// Returns users that people you follow also follow, but you don't follow yet
+    /// </summary>
+    public async Task<IEnumerable<string>> GetSuggestedUsersAsync(string userId, int limit = 10, CancellationToken cancellationToken = default)
+    {
+        if (!ObjectId.TryParse(userId, out var userOid))
+            return [];
+
+        // 1. Get who I follow
+        var myFollowings = await followRepository.GetFollowingAsync(userOid, 0, 100, cancellationToken);
+        var myFollowingIds = myFollowings.Select(f => f.FollowingId).ToHashSet();
+        
+        if (myFollowingIds.Count == 0)
+            return []; // No one to suggest from
+
+        // 2. For each person I follow, get who they follow (Friends of Friends)
+        var suggestions = new Dictionary<string, int>(); // userId -> score (how many mutual friends follow them)
+        
+        foreach (var followingOid in myFollowingIds)
+        {
+            var theirFollowings = await followRepository.GetFollowingAsync(followingOid, 0, 50, cancellationToken);
+            
+            foreach (var suggested in theirFollowings)
+            {
+                var suggestedId = suggested.FollowingId.ToString();
+                
+                // Skip myself and people I already follow
+                if (suggested.FollowingId == userOid || myFollowingIds.Contains(suggested.FollowingId))
+                    continue;
+                
+                suggestions[suggestedId] = suggestions.GetValueOrDefault(suggestedId) + 1;
+            }
+        }
+
+        // 3. Return top suggestions sorted by score (number of mutual friends)
+        return suggestions
+            .OrderByDescending(x => x.Value)
+            .Take(limit)
+            .Select(x => x.Key);
+    }
 }

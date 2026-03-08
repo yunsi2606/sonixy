@@ -23,6 +23,9 @@ service SocialGraphService {
 
   // Check reciprocal follow status
   rpc IsMutualFollow (IsMutualFollowRequest) returns (IsMutualFollowResponse);
+
+  // Get suggested users to follow (Friends of Friends algorithm)
+  rpc GetSuggestedUsers (GetSuggestedUsersRequest) returns (GetSuggestedUsersResponse);
 }
 
 message GetFollowingRequest {
@@ -76,4 +79,13 @@ message IsMutualFollowRequest {
 
 message IsMutualFollowResponse {
   bool is_mutual = 1;
+}
+
+message GetSuggestedUsersRequest {
+  string user_id = 1;
+  int32 limit = 2;
+}
+
+message GetSuggestedUsersResponse {
+  repeated string user_ids = 1;
 }

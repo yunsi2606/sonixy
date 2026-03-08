@@ -27,6 +27,7 @@ builder.Services.AddScoped<IMongoDatabase>(sp =>
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<AnalyticsConsumer>();
+    x.AddConsumer<HashtagConsumer>();
 
     x.UsingRabbitMq((context, cfg) =>
     {

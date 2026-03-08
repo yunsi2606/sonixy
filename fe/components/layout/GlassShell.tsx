@@ -21,6 +21,7 @@ export const GlassShell: React.FC<GlassShellProps> = ({ children }) => {
         pathname.startsWith('/explore') ||
         pathname.startsWith('/messages') ||
         pathname.startsWith('/notifications') ||
+        pathname.startsWith('/search') ||
         pathname.startsWith('/bookmarks');
 
     return (

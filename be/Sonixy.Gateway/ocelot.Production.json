@@ -233,6 +233,21 @@
             "AuthenticationOptions": {
                 "AuthenticationProviderKey": "Bearer"
             }
+        },
+        {
+            "DownstreamPathTemplate": "/api/search/{everything}",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "search-service",
+                    "Port": 8096
+                }
+            ],
+            "UpstreamPathTemplate": "/api/search/{everything}",
+            "UpstreamHttpMethod": [
+                "GET"
+            ],
+            "Key": "search-service"
         }
     ],
     "SwaggerEndPoints": [
@@ -321,6 +336,17 @@
                     "Version": "v1",
                     "Url": "http://chat-service:8095/swagger/v1/swagger.json",
                     "RoutePrefix": "chat"
+                }
+            ]
+        },
+        {
+            "Key": "search-service",
+            "Config": [
+                {
+                    "Name": "Search Service",
+                    "Version": "v1",
+                    "Url": "http://search-service:8096/swagger/v1/swagger.json",
+                    "RoutePrefix": "search"
                 }
             ]
         }

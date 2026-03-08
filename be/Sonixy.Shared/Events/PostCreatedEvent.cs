@@ -5,5 +5,9 @@ public record PostCreatedEvent(
     string AuthorId,
     string Content,
     List<string> ImageUrls,
+    List<string> Hashtags,
     DateTime CreatedAt
-);
+)
+{
+    private PostCreatedEvent() : this(default!, default!, default!, [], [], default) { }
+}

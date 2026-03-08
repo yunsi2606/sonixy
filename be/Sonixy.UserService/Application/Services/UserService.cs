@@ -6,9 +6,12 @@ using Sonixy.Shared.Specifications;
 using Sonixy.Shared.Interfaces;
 using MongoDB.Driver;
 
+using MassTransit;
+using Sonixy.Shared.Events;
+
 namespace Sonixy.UserService.Application.Services;
 
-public class UserService(IUserRepository userRepository, IMediaStorage mediaStorage) : IUserService
+public class UserService(IUserRepository userRepository, IMediaStorage mediaStorage, IPublishEndpoint publishEndpoint) : IUserService
 {
     public async Task<(string UploadUrl, string ObjectKey, string PublicUrl)> GeneratePresignedUrlAsync(string fileName, string contentType, CancellationToken cancellationToken = default)
     {
@@ -45,6 +48,16 @@ public class UserService(IUserRepository userRepository, IMediaStorage mediaStor
         }
 
         await userRepository.AddAsync(user, cancellationToken);
+
+        await publishEndpoint.Publish(new UserCreatedEvent(
+            user.Id.ToString(),
+            user.Email,
+            user.Username,
+            user.DisplayName,
+            user.AvatarUrl,
+            user.Bio,
+            user.CreatedAt
+        ), cancellationToken);
 
         return MapToDto(user);
     }
