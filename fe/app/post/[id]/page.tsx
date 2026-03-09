@@ -8,16 +8,18 @@ import { CommentThreadSkeleton } from '@/components/skeletons/CommentSkeleton';
 import { postService } from '@/services/post.service';
 import type { Post } from '@/types/api';
 import { ArrowLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
-export default function PostDetailPage({ params }: { params: { id: string } }) {
+export default function PostDetailPage() {
+    const { id } = useParams() as { id: string };
     const [post, setPost] = useState<Post | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
     const fetchPost = async () => {
+        if (!id) return;
         try {
-            const fetchedPost = await postService.getPostById(params.id);
+            const fetchedPost = await postService.getPostById(id);
             setPost(fetchedPost);
         } catch (error) {
             console.error('Failed to load post', error);
@@ -27,8 +29,10 @@ export default function PostDetailPage({ params }: { params: { id: string } }) {
     };
 
     useEffect(() => {
-        fetchPost();
-    }, [params.id]);
+        if (id) {
+            fetchPost();
+        }
+    }, [id]);
 
     const handleLike = async (id: string) => {
         if (!post) return;
