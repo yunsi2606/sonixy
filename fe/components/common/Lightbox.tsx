@@ -125,7 +125,7 @@ export function Lightbox({ isOpen, onClose, post, initialIndex = 0 }: LightboxPr
                      On mobile vertical stack, the "independent scroll" implies the whole page scrolls or just the comments. 
                      I'll enable comments block on mobile to flow normally below image.
                  */}
-                <div className="md:hidden flex-1 bg-[var(--color-bg-deep)] min-h-[50vh]">
+                <div className="md:hidden flex-1 bg-[var(--color-bg-deep)] min-h-0 flex flex-col">
                     <CommentSection post={post} />
                 </div>
             </div>

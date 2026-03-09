@@ -1,14 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { PostCard } from '@/components/common/PostCard';
-import { CommentSection } from '@/components/comments/CommentSection';
 import { PostSkeleton } from '@/components/skeletons/PostSkeleton';
 import { CommentThreadSkeleton } from '@/components/skeletons/CommentSkeleton';
 import { postService } from '@/services/post.service';
 import type { Post } from '@/types/api';
 import { ArrowLeft } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
+import { Lightbox } from '@/components/common/Lightbox';
+import { TextPostModal } from '@/components/common/TextPostModal';
 
 export default function PostDetailPage() {
     const { id } = useParams() as { id: string };
@@ -34,9 +34,9 @@ export default function PostDetailPage() {
         }
     }, [id]);
 
-    const handleLike = async (id: string) => {
+    const handleLike = async (postId: string) => {
         if (!post) return;
-        
+
         // Optimistic update
         const newIsLiked = !post.isLiked;
         setPost({
@@ -46,9 +46,8 @@ export default function PostDetailPage() {
         });
 
         try {
-            await postService.toggleLike(id);
+            await postService.toggleLike(postId);
         } catch (error) {
-            // Revert on failure
             console.error('Like failed', error);
             fetchPost();
         }
@@ -56,50 +55,48 @@ export default function PostDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="w-full max-w-2xl mx-auto space-y-4">
-                <PostSkeleton />
-                <CommentThreadSkeleton />
+            <div className="fixed inset-0 z-[100] bg-[var(--color-bg-base)] flex flex-col items-center justify-center p-4">
+                <div className="w-full max-w-2xl space-y-4">
+                    <PostSkeleton />
+                    <CommentThreadSkeleton />
+                </div>
             </div>
         );
     }
 
     if (!post) {
         return (
-            <div className="w-full max-w-2xl mx-auto text-center py-20">
+            <div className="fixed inset-0 z-[100] bg-[var(--color-bg-base)] flex flex-col items-center justify-center text-center p-4">
                 <h2 className="text-2xl font-bold text-white mb-2">Post not found</h2>
                 <p className="text-[var(--color-text-muted)] mb-6">The post you are looking for doesn't exist or has been deleted.</p>
-                <button 
+                <button
                     onClick={() => router.back()}
-                    className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-colors"
+                    className="px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl transition-colors flex items-center gap-2 mx-auto"
                 >
-                    Go Back
+                    <ArrowLeft size={16} /> Go Back
                 </button>
             </div>
         );
     }
 
-    return (
-        <div className="w-full max-w-2xl mx-auto flex flex-col min-h-screen">
-            <div className="mb-6 flex items-center gap-4">
-                <button 
-                    onClick={() => router.back()}
-                    className="p-2 glass-base rounded-full hover:bg-white/10 transition-colors text-white"
-                >
-                    <ArrowLeft size={20} />
-                </button>
-                <h1 className="text-xl font-bold text-white">Post</h1>
-            </div>
+    const isTextOnly = !post.media || post.media.length === 0;
 
-            <PostCard 
-                post={post} 
-                onLike={handleLike} 
-                variant="hero" 
-                disableCommentsInline={true}
+    if (isTextOnly) {
+        return (
+            <TextPostModal 
+                isOpen={true} 
+                onClose={() => router.back()} 
+                post={post}
+                onLike={handleLike}
             />
+        );
+    }
 
-            <div className="flex-1 mt-4 glass-base rounded-2xl overflow-hidden border border-[var(--glass-border)] pb-24">
-                <CommentSection post={post} />
-            </div>
-        </div>
+    return (
+        <Lightbox 
+            isOpen={true} 
+            onClose={() => router.back()} 
+            post={post} 
+        />
     );
 }

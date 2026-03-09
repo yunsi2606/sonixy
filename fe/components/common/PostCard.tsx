@@ -2,6 +2,7 @@ import type { Post } from '@/types/api';
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Lightbox } from './Lightbox';
+import { TextPostModal } from './TextPostModal';
 import { Avatar } from '@/components/ui/Avatar';
 import { Heart, MessageCircle, Share2, MoreHorizontal, Maximize2 } from 'lucide-react';
 
@@ -21,6 +22,7 @@ export function PostCard({ post, variant = 'default', onLike, onComment, disable
 
     const [isLightboxOpen, setIsLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
+    const [isTextModalOpen, setIsTextModalOpen] = useState(false);
 
     const openLightbox = (index: number) => {
         setLightboxIndex(index);
@@ -214,18 +216,41 @@ export function PostCard({ post, variant = 'default', onLike, onComment, disable
                     activeColor={post.isLiked ? "text-red-500 scale-110" : "text-pink-500"}
                     isActive={post.isLiked}
                 />
-                <Link href={`/post/${post.id}`} className="flex items-center">
+                {disableCommentsInline ? (
                     <ActionButton
                         icon={<MessageCircle size={20} />}
                         count="Comment"
                         activeColor="text-[var(--color-primary)]"
-                        onClick={() => { }} // Remove inline expanding
+                        onClick={() => { }}
                     />
-                </Link>
+                ) : (
+                    <ActionButton
+                        icon={<MessageCircle size={20} />}
+                        count="Comment"
+                        activeColor="text-[var(--color-primary)]"
+                        onClick={() => {
+                            if (post.media && post.media.length > 0) {
+                                setIsLightboxOpen(true);
+                            } else {
+                                setIsTextModalOpen(true);
+                            }
+                        }}
+                    />
+                )}
                 <ActionButton icon={<Share2 size={20} />} count="Share" onClick={handleShare} activeColor="text-[var(--color-secondary)]" className="ml-auto" />
             </div>
 
             {/* Removed inline comments section as it now navigates to the post details page */}
+
+            {/* Modal for Text-only posts */}
+            {(!post.media || post.media.length === 0) && (
+                <TextPostModal 
+                    isOpen={isTextModalOpen} 
+                    onClose={() => setIsTextModalOpen(false)} 
+                    post={post}
+                    onLike={onLike}
+                />
+            )}
 
             {/* Lightbox for viewing media */}
             {post.media && post.media.length > 0 && (
