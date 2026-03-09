@@ -10,9 +10,10 @@ interface PostCardProps {
     variant?: 'default' | 'hero' | 'compact';
     onLike?: (id: string) => void;
     onComment?: (id: string) => void;
+    disableCommentsInline?: boolean;
 }
 
-export function PostCard({ post, variant = 'default', onLike, onComment }: PostCardProps) {
+export function PostCard({ post, variant = 'default', onLike, onComment, disableCommentsInline }: PostCardProps) {
     // Format date relative or locale
     // In real app, consider using date-fns formatDistanceToNow
     const date = new Date(post.createdAt);
@@ -213,9 +214,18 @@ export function PostCard({ post, variant = 'default', onLike, onComment }: PostC
                     activeColor={post.isLiked ? "text-red-500 scale-110" : "text-pink-500"}
                     isActive={post.isLiked}
                 />
-                <ActionButton icon={<MessageCircle size={20} />} count="Comment" onClick={() => onComment?.(post.id)} activeColor="text-[var(--color-primary)]" />
+                <Link href={`/post/${post.id}`} className="flex items-center">
+                    <ActionButton
+                        icon={<MessageCircle size={20} />}
+                        count="Comment"
+                        activeColor="text-[var(--color-primary)]"
+                        onClick={() => { }} // Remove inline expanding
+                    />
+                </Link>
                 <ActionButton icon={<Share2 size={20} />} count="Share" onClick={handleShare} activeColor="text-[var(--color-secondary)]" className="ml-auto" />
             </div>
+
+            {/* Removed inline comments section as it now navigates to the post details page */}
 
             {/* Lightbox for viewing media */}
             {post.media && post.media.length > 0 && (
