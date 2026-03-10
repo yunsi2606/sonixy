@@ -1,6 +1,34 @@
+'use client';
+
 import { Rocket, BookOpen, Layers, Zap, Palette, Settings, Monitor, Check } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
+
+  const TECH_STACK_DATA = [
+    {
+      title: 'Backend',
+      items: [
+        '.NET 10 + ASP.NET Core',
+        'MongoDB with ObjectId',
+        'Repository + Specification Pattern',
+        'Swagger Documentation',
+        'gRPC Inter-Service Communication'
+      ]
+    },
+    {
+      title: 'Frontend',
+      items: [
+        'Next.js 15 (App Router)',
+        'TypeScript',
+        'Tailwind CSS v4',
+        'SEO Optimized',
+        'Premium Design System'
+      ]
+    }
+  ];
+
   return (
     <main className="relative z-10 w-full">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
@@ -20,10 +48,16 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12">
-            <button className="btn-primary text-lg px-10 py-4 shadow-[var(--shadow-neon)] hover:shadow-[0_0_40px_rgba(0,229,255,0.6)] transition-all duration-300 flex items-center justify-center gap-2">
+            <button
+              className="btn-primary text-lg px-10 py-4 shadow-[var(--shadow-neon)] hover:shadow-[0_0_40px_rgba(0,229,255,0.6)] transition-all duration-300 flex items-center justify-center gap-2"
+              onClick={() => router.push("/feed")}
+            >
               Get Started <Rocket size={20} />
             </button>
-            <button className="glass-base px-10 py-4 rounded-full font-semibold hover:bg-white/10 transition-all flex items-center justify-center gap-2">
+            <button
+              className="glass-base px-10 py-4 rounded-full font-semibold hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+              onClick={() => router.push("/docs")}
+            >
               View Docs <BookOpen size={20} />
             </button>
           </div>
@@ -86,7 +120,7 @@ export default function Home() {
                 <h4 className="text-2xl font-bold text-white">Backend</h4>
               </div>
               <ul className="space-y-4">
-                {['.NET 10 + ASP.NET Core', 'MongoDB with ObjectId', 'Repository + Specification Pattern', 'Swagger Documentation', 'gRPC Inter-Service Communication'].map(item => (
+                {TECH_STACK_DATA[0].items.map(item => (
                   <li key={item} className="flex items-center gap-3 text-[var(--color-text-secondary)] text-lg">
                     <Check size={20} className="text-[var(--color-primary)]" />
                     <span>{item}</span>
@@ -103,7 +137,7 @@ export default function Home() {
                 <h4 className="text-2xl font-bold text-white">Frontend</h4>
               </div>
               <ul className="space-y-4">
-                {['Next.js 15 (App Router)', 'TypeScript', 'Tailwind CSS v4', 'SEO Optimized', 'Premium Design System'].map(item => (
+                {TECH_STACK_DATA[1].items.map(item => (
                   <li key={item} className="flex items-center gap-3 text-[var(--color-text-secondary)] text-lg">
                     <Check size={20} className="text-[var(--color-secondary)]" />
                     <span>{item}</span>
