@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useNotification } from '@/contexts/NotificationContext';
 import {
     Home,
@@ -21,6 +21,7 @@ import {
 export function Sidebar() {
     const { user, logout } = useAuth();
     const router = useRouter();
+    const pathname = usePathname();
     const { unreadCount } = useNotification(); // Hook usage
 
     const onLogout = async () => {
@@ -38,25 +39,25 @@ export function Sidebar() {
             {/* Primary Navigation */}
             <nav className="flex flex-col gap-1">
                 <NavGroup title="MENU">
-                    <NavItem icon={<Home size={20} />} name="Home" href="/feed" active />
-                    <NavItem icon={<Search size={20} />} name="Search" href="/search" />
-                    <NavItem icon={<Globe size={20} />} name="Explore" href="/explore" />
-                    <NavItem icon={<Bookmark size={20} />} name="Bookmarks" href="/bookmarks" />
+                    <NavItem icon={<Home size={20} />} name="Home" href="/feed" active={pathname === '/feed'} />
+                    <NavItem icon={<Search size={20} />} name="Search" href="/search" active={pathname === '/search'} />
+                    <NavItem icon={<Globe size={20} />} name="Explore" href="/explore" active={pathname === '/explore'} />
+                    <NavItem icon={<Bookmark size={20} />} name="Bookmarks" href="/bookmarks" active={pathname === '/bookmarks'} />
                 </NavGroup>
 
                 <div className="h-4" />
 
                 <NavGroup title="SOCIAL">
-                    <NavItem icon={<Bell size={20} />} name="Notifications" href="/notifications" badge={unreadCount > 0 ? unreadCount : undefined} />
-                    <NavItem icon={<MessageCircle size={20} />} name="Messages" href="/messages" badge={5} />
-                    <NavItem icon={<Users size={20} />} name="Communities" href="/communities" />
+                    <NavItem icon={<Bell size={20} />} name="Notifications" href="/notifications" badge={unreadCount > 0 ? unreadCount : undefined} active={pathname === '/notifications'} />
+                    <NavItem icon={<MessageCircle size={20} />} name="Messages" href="/messages" badge={5} active={pathname === '/messages'} />
+                    <NavItem icon={<Users size={20} />} name="Communities" href="/communities" active={pathname === '/communities'} />
                 </NavGroup>
 
                 <div className="h-4" />
 
                 <NavGroup title="SETTINGS">
-                    <NavItem icon={<Settings size={20} />} name="Settings" href="/settings" />
-                    <NavItem icon={<CircleHelp size={20} />} name="Help" href="/help" />
+                    <NavItem icon={<Settings size={20} />} name="Settings" href="/settings" active={pathname === '/settings'} />
+                    <NavItem icon={<CircleHelp size={20} />} name="Help" href="/help" active={pathname === '/help'} />
                     <button
                         onClick={onLogout}
                         className="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-[var(--color-text-secondary)] hover:bg-white/5 hover:text-red-400 transition-all duration-200"
