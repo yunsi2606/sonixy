@@ -106,6 +106,22 @@
             }
         },
         {
+            "DownstreamPathTemplate": "/api/users/check-username",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5187
+                }
+            ],
+            "UpstreamPathTemplate": "/api/users/check-username",
+            "UpstreamHttpMethod": [
+                "GET"
+            ],
+            "Key": "user-check-username",
+            "Priority": 1
+        },
+        {
             "DownstreamPathTemplate": "/api/users/{everything}",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [

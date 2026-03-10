@@ -26,6 +26,22 @@
             }
         },
         {
+            "DownstreamPathTemplate": "/api/Users/check-username",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "user-service",
+                    "Port": 8089
+                }
+            ],
+            "UpstreamPathTemplate": "/api/users/check-username",
+            "UpstreamHttpMethod": [
+                "GET"
+            ],
+            "Key": "user-check-username",
+            "Priority": 1
+        },
+        {
             "DownstreamPathTemplate": "/api/Users/{everything}",
             "DownstreamScheme": "http",
             "DownstreamHostAndPorts": [
