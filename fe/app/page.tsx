@@ -1,10 +1,9 @@
 'use client';
 
 import { Rocket, BookOpen, Layers, Zap, Palette, Settings, Monitor, Check } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function Home() {
-  const router = useRouter();
 
   const TECH_STACK_DATA = [
     {
@@ -48,18 +47,18 @@ export default function Home() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-12">
-            <button
+            <Link
+              href="/feed"
               className="btn-primary text-lg px-10 py-4 shadow-[var(--shadow-neon)] hover:shadow-[0_0_40px_rgba(0,229,255,0.6)] transition-all duration-300 flex items-center justify-center gap-2"
-              onClick={() => router.push("/feed")}
             >
               Get Started <Rocket size={20} />
-            </button>
-            <button
+            </Link>
+            <Link
+              href="/docs"
               className="glass-base px-10 py-4 rounded-full font-semibold hover:bg-white/10 transition-all flex items-center justify-center gap-2"
-              onClick={() => router.push("/docs")}
             >
               View Docs <BookOpen size={20} />
-            </button>
+            </Link>
           </div>
         </section>
 
