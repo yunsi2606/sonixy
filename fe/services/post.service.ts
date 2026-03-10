@@ -4,7 +4,7 @@ import type { Post, CursorPage } from '@/types/api';
 export const postService = {
     async getFeed(cursor?: string): Promise<CursorPage<Post>> {
         const query = cursor ? `?cursor=${cursor}` : '';
-        return apiClient.get<CursorPage<Post>>(`/api/posts/feed${query}`);
+        return apiClient.get<CursorPage<Post>>(`/api/feed${query}`);
     },
 
     async getUserPosts(userId: string, cursor?: string): Promise<CursorPage<Post>> {

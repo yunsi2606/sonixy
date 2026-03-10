@@ -184,6 +184,9 @@ services:
       - MongoDB__DatabaseName=sonixy_feed
       - GrpcClients__PostService=http://post-service:8190
       - GrpcClients__SocialGraphService=http://social-service:8191
+      - Jwt__SecretKey=${JWT_SECRET:-YourSuperSecretKeyThatIsAtLeast32CharactersLongForHS256}
+      - Jwt__Issuer=Sonixy.IdentityService
+      - Jwt__Audience=Sonixy.Client
     networks:
       - sonixy-network
       - database_network

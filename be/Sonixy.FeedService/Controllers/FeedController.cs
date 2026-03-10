@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using StackExchange.Redis;
 using Sonixy.FeedService.Services;
@@ -8,27 +10,29 @@ namespace Sonixy.FeedService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class FeedController(IConnectionMultiplexer redis, IPostClient postClient) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetFeed(
-        [FromQuery] string userId,
         [FromQuery] string? cursor = null,
         [FromQuery] int pageSize = 20)
     {
-        if (string.IsNullOrEmpty(userId)) return BadRequest("UserId required");
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
         pageSize = Math.Clamp(pageSize, 1, 50);
 
         var db = redis.GetDatabase();
         var timelineKey = $"sonixy:feed:timeline:{userId}";
 
         // Determine score range for cursor-based pagination
-        // Score is Unix timestamp ms. Higher = newer. We traverse from newest to oldest.
+        // Score is HotScore (base = Unix timestamp ms + interaction boost). Higher = hotter.
         double maxScore = double.PositiveInfinity;
         if (!string.IsNullOrEmpty(cursor) && double.TryParse(cursor, out var parsedCursor))
         {
-            // Exclusive: fetch posts older than cursor
-            maxScore = parsedCursor - 1;
+            // Exclusive: fetch posts with lower score than cursor
+            maxScore = parsedCursor - 0.001;
         }
 
         // Fetch pageSize + 1 to determine hasMore
@@ -47,6 +51,7 @@ public class FeedController(IConnectionMultiplexer redis, IPostClient postClient
 
         if (itemsToProcess.Length == 0)
         {
+            // Fallback: if user has no personalized timeline yet, return empty gracefully
             return Ok(new { items = Array.Empty<PostDto>(), nextCursor = (string?)null, hasMore = false });
         }
 
@@ -75,7 +80,7 @@ public class FeedController(IConnectionMultiplexer redis, IPostClient postClient
             posts.AddRange(fetched);
         }
 
-        // Re-order posts to match timeline order (postIds order)
+        // Re-order posts to match timeline order (sorted by HotScore descending)
         var postMap = posts.ToDictionary(p => p.Id);
         var orderedPosts = postIds
             .Where(id => postMap.ContainsKey(id))
@@ -87,10 +92,9 @@ public class FeedController(IConnectionMultiplexer redis, IPostClient postClient
         if (hasMore && itemsToProcess.Length > 0)
         {
             var lastScore = itemsToProcess.Last().Score;
-            nextCursor = lastScore.ToString("F0");
+            nextCursor = lastScore.ToString("F3");
         }
 
         return Ok(new { items = orderedPosts, nextCursor, hasMore });
     }
 }
-

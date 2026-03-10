@@ -3,6 +3,10 @@ using MongoDB.Driver;
 using StackExchange.Redis;
 using Sonixy.FeedService.Consumers;
 using Sonixy.FeedService.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +51,30 @@ builder.Services.AddGrpcClient<Sonixy.Shared.Protos.SocialGraphService.SocialGra
 builder.Services.AddScoped<IPostClient, PostClient>();
 builder.Services.AddScoped<ISocialClient, SocialClient>();
 
+// JWT Configuration
+var jwtSecret = builder.Configuration["Jwt:SecretKey"] ?? "YourSuperSecretKeyThatIsAtLeast32CharactersLongForHS256";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "Sonixy.IdentityService";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "Sonixy.Client";
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            NameClaimType = ClaimTypes.NameIdentifier,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            ValidateIssuer = true,
+            ValidIssuer = jwtIssuer,
+            ValidateAudience = true,
+            ValidAudience = jwtAudience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 // MassTransit (RabbitMQ)
 builder.Services.AddMassTransit(x =>
 {
@@ -78,6 +106,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

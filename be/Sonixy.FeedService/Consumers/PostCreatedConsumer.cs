@@ -3,6 +3,7 @@ using StackExchange.Redis;
 using Sonixy.Shared.Events;
 using Sonixy.FeedService.Services;
 using System.Text.Json;
+using Sonixy.FeedService.Helpers;
 
 namespace Sonixy.FeedService.Consumers;
 
@@ -19,7 +20,7 @@ public class PostCreatedConsumer(
     {
         var evt = context.Message;
         var db = redis.GetDatabase();
-        var score = new DateTimeOffset(evt.CreatedAt).ToUnixTimeMilliseconds();
+        var score = HotScoreCalculator.CalculateInitialScore(evt.CreatedAt);
 
         // Cache post metadata in Redis for fast reads later
         var postCacheKey = $"sonixy:feed:post:{evt.PostId}";
@@ -30,7 +31,10 @@ public class PostCreatedConsumer(
             content = evt.Content,
             imageUrls = evt.ImageUrls,
             hashtags = evt.Hashtags,
-            createdAt = evt.CreatedAt
+            createdAt = evt.CreatedAt,
+            likeCount = 0,
+            commentCount = 0,
+            shareCount = 0
         });
         await db.StringSetAsync(postCacheKey, postCacheData, PostCacheTtl);
 
@@ -45,7 +49,7 @@ public class PostCreatedConsumer(
             evt.PostId, evt.AuthorId, allRecipients.Count, followerIds.Count
         );
 
-        // 4. Fan-out: Push postId into each recipient's timeline (Redis Sorted Set)
+        // Fan-out: Push postId into each recipient's timeline (Redis Sorted Set)
         var batch = db.CreateBatch();
         var tasks = new List<Task>();
 
@@ -59,6 +63,12 @@ public class PostCreatedConsumer(
             // Trim timeline to prevent unbounded growth (keep only latest N posts)
             tasks.Add(batch.SortedSetRemoveRangeByRankAsync(timelineKey, 0, -(MaxTimelineSize + 1)));
         }
+
+        // Store a reverse index: which users have this post in their timeline?
+        // This is necessary so UserInteractionConsumer knows whose timelines to update when the score changes
+        var reverseKey = $"sonixy:feed:postline:{evt.PostId}";
+        tasks.Add(db.SetAddAsync(reverseKey, allRecipients.Select(id => (RedisValue)id).ToArray()));
+        tasks.Add(db.KeyExpireAsync(reverseKey, PostCacheTtl));
 
         batch.Execute();
         await Task.WhenAll(tasks);
