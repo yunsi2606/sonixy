@@ -30,17 +30,22 @@ builder.Services.AddScoped<IMongoDatabase>(sp =>
     var client = sp.GetRequiredService<IMongoClient>();
     var dbName = builder.Configuration["MongoDB:DatabaseName"];
     return client.GetDatabase(dbName);
-    return client.GetDatabase(dbName);
 });
 
 // Service Clients
 builder.Services.AddGrpcClient<Sonixy.Shared.Protos.PostService.PostServiceClient>(o =>
 {
-    o.Address = new Uri("http://post-service:8190");
+    o.Address = new Uri(builder.Configuration["GrpcClients:PostService"] ?? "http://post-service:8190");
+});
+
+builder.Services.AddGrpcClient<Sonixy.Shared.Protos.SocialGraphService.SocialGraphServiceClient>(o =>
+{
+    o.Address = new Uri(builder.Configuration["GrpcClients:SocialGraphService"] ?? "http://social-service:8191");
 });
 
 // Register Wrapper
 builder.Services.AddScoped<IPostClient, PostClient>();
+builder.Services.AddScoped<ISocialClient, SocialClient>();
 
 // MassTransit (RabbitMQ)
 builder.Services.AddMassTransit(x =>

@@ -182,6 +182,8 @@ services:
       - Redis__ConnectionString=redis:6379
       - MongoDB__ConnectionString=mongodb://admin:${MONGO_PASSWORD:-SonixyAdmin123!}@mongodb:27017
       - MongoDB__DatabaseName=sonixy_feed
+      - GrpcClients__PostService=http://post-service:8190
+      - GrpcClients__SocialGraphService=http://social-service:8191
     networks:
       - sonixy-network
       - database_network

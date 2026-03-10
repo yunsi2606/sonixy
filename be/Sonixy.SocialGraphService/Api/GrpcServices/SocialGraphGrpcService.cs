@@ -31,8 +31,15 @@ public class SocialGraphGrpcService(ISocialGraphService socialGraphService)
             throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid user ID"));
         }
 
-        // TODO: Implement get followers list from repository
-        return new GetFollowersResponse();
+        var limit = request.Limit > 0 ? request.Limit : 1000;
+        var followers = await socialGraphService.GetFollowersAsync(
+            request.UserId,
+            0, limit,
+            context.CancellationToken);
+
+        var response = new GetFollowersResponse();
+        response.UserIds.AddRange(followers);
+        return response;
     }
 
     public override async Task<IsFollowingResponse> IsFollowing(
