@@ -105,6 +105,24 @@ public class FeedController(IConnectionMultiplexer redis, IPostClient postClient
             .Select(id => postMap[id])
             .ToList();
 
+        // Dynamically update IsLiked for the current user
+        if (orderedPosts.Count > 0)
+        {
+            var likedPostIds = await postClient.GetLikedPostIdsAsync(userId, orderedPosts.Select(p => p.Id));
+            for (int i = 0; i < orderedPosts.Count; i++)
+            {
+                var post = orderedPosts[i];
+                if (likedPostIds.Contains(post.Id))
+                {
+                    orderedPosts[i] = post with { IsLiked = true };
+                }
+                else
+                {
+                    orderedPosts[i] = post with { IsLiked = false };
+                }
+            }
+        }
+
         // Build cursor from the last item's score
         string? nextCursor = null;
         if (hasMore && itemsToProcess.Length > 0)

@@ -5,6 +5,7 @@ namespace Sonixy.FeedService.Services;
 public interface IPostClient
 {
     Task<List<DTOs.PostDto>> GetPostsByIdsAsync(IEnumerable<string> ids, CancellationToken cancellationToken = default);
+    Task<HashSet<string>> GetLikedPostIdsAsync(string userId, IEnumerable<string> postIds, CancellationToken cancellationToken = default);
 }
 
 public class PostClient(PostService.PostServiceClient grpcClient, ILogger<PostClient> logger) : IPostClient
@@ -37,6 +38,24 @@ public class PostClient(PostService.PostServiceClient grpcClient, ILogger<PostCl
         {
             logger.LogError(ex, "Error fetching posts via gRPC");
             return [];
+        }
+    }
+
+    public async Task<HashSet<string>> GetLikedPostIdsAsync(string userId, IEnumerable<string> postIds, CancellationToken cancellationToken = default)
+    {
+        try 
+        {
+            var request = new GetLikedPostIdsRequest { CurrentUserId = userId };
+            request.PostIds.AddRange(postIds);
+
+            var reply = await grpcClient.GetLikedPostIdsAsync(request, cancellationToken: cancellationToken);
+            
+            return reply.LikedPostIds.ToHashSet();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Error fetching liked post IDs via gRPC");
+            return new HashSet<string>();
         }
     }
 }

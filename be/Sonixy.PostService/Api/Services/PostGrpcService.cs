@@ -28,4 +28,12 @@ public class PostGrpcService(IPostService postService, ILogger<PostGrpcService> 
 
         return response;
     }
+
+    public override async Task<GetLikedPostIdsResponse> GetLikedPostIds(GetLikedPostIdsRequest request, ServerCallContext context)
+    {
+        var likedIds = await postService.GetUserLikedPostIdsAsync(request.CurrentUserId, request.PostIds, context.CancellationToken);
+        var response = new GetLikedPostIdsResponse();
+        response.LikedPostIds.AddRange(likedIds);
+        return response;
+    }
 }

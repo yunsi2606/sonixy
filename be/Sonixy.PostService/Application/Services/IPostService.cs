@@ -12,4 +12,5 @@ public interface IPostService
     Task<CursorPage<PostDto>> GetUserPostsAsync(string userId, string? cursor, string? currentUserId = null, int pageSize = 20, CancellationToken cancellationToken = default);
     Task<List<PostDto>> GetPostsByIdsAsync(IEnumerable<string> ids, string? currentUserId = null, CancellationToken cancellationToken = default);
     Task<bool> ToggleLikeAsync(string postId, string userId, CancellationToken cancellationToken = default);
+    Task<List<string>> GetUserLikedPostIdsAsync(string userId, IEnumerable<string> postIds, CancellationToken cancellationToken = default);
 }

@@ -48,15 +48,20 @@ public class SocialGraphService(IFollowRepository followRepository, ILikeReposit
         return await followRepository.IsFollowingAsync(followerOid, followingOid, cancellationToken);
     }
 
-    public async Task LikePostAsync(string userId, string postId, CancellationToken cancellationToken = default)
+    public async Task<bool> ToggleLikeAsync(string userId, string postId, CancellationToken cancellationToken = default)
     {
         if (!ObjectId.TryParse(userId, out var userOid) || 
             !ObjectId.TryParse(postId, out var postOid))
             throw new ArgumentException("Invalid IDs");
+        
+        var existing = await likeRepository.GetLikeAsync(userOid, postOid, cancellationToken);
 
-        if (await likeRepository.HasLikedAsync(userOid, postOid, cancellationToken))
-            return; // Already liked
-
+        if (existing is not null)
+        {
+            await likeRepository.DeleteAsync(existing.Id, cancellationToken);
+            return false;
+        }
+        
         var like = new Like
         {
             UserId = userOid,
@@ -64,19 +69,8 @@ public class SocialGraphService(IFollowRepository followRepository, ILikeReposit
         };
 
         await likeRepository.AddAsync(like, cancellationToken);
-    }
 
-    public async Task UnlikePostAsync(string userId, string postId, CancellationToken cancellationToken = default)
-    {
-        if (!ObjectId.TryParse(userId, out var userOid) || 
-            !ObjectId.TryParse(postId, out var postOid))
-            return;
-
-        var like = await likeRepository.GetLikeAsync(userOid, postOid, cancellationToken);
-        if (like is not null)
-        {
-            await likeRepository.DeleteAsync(like.Id, cancellationToken);
-        }
+        return true;
     }
 
     public async Task<long> GetLikeCountAsync(string postId, CancellationToken cancellationToken = default)

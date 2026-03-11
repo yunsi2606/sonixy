@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Sonixy.PostService.Application.DTOs;
 using Sonixy.PostService.Application.Services;
+using Sonixy.Shared.Extensions;
 
 namespace Sonixy.PostService.Api.Controllers;
 
@@ -35,7 +36,7 @@ public class PostsController(IPostService postService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreatePost([FromBody] CreatePostWithMediaDto dto)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
         var post = await postService.CreatePostAsync(dto, userId);
@@ -50,7 +51,7 @@ public class PostsController(IPostService postService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetPost(string id)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         var post = await postService.GetPostByIdAsync(id, userId);
         
         if (post is null)
@@ -66,7 +67,7 @@ public class PostsController(IPostService postService) : ControllerBase
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFeed([FromQuery] string? cursor, [FromQuery] int pageSize = 20)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         pageSize = Math.Min(pageSize, 100); // Cap at 100
         var feed = await postService.GetFeedAsync(cursor, userId, pageSize);
         return Ok(feed);
@@ -82,11 +83,11 @@ public class PostsController(IPostService postService) : ControllerBase
         // For "My Posts", user might pass "me" or their ID
         if (userId.Equals("me", StringComparison.OrdinalIgnoreCase))
         {
-            userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "";
+            userId = User.GetUserId() ?? "";
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
         }
 
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var currentUserId = User.GetUserId();
 
         pageSize = Math.Min(pageSize, 100);
         var posts = await postService.GetUserPostsAsync(userId, cursor, currentUserId, pageSize);
@@ -102,7 +103,7 @@ public class PostsController(IPostService postService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> ToggleLike(string id)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
         var success = await postService.ToggleLikeAsync(id, userId);
@@ -118,7 +119,7 @@ public class PostsController(IPostService postService) : ControllerBase
     public async Task<IActionResult> GetPostsByIds([FromBody] List<string> ids)
     {
         // currentUserId is optional, for "IsLiked" status
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = User.GetUserId();
         var posts = await postService.GetPostsByIdsAsync(ids, userId);
         return Ok(posts);
     }

@@ -9,6 +9,7 @@ import { ArrowLeft } from 'lucide-react';
 import { useRouter, useParams } from 'next/navigation';
 import { Lightbox } from '@/components/common/Lightbox';
 import { TextPostModal } from '@/components/common/TextPostModal';
+import { socialService } from '@/services/social.service';
 
 export default function PostDetailPage() {
     const { id } = useParams() as { id: string };
@@ -46,7 +47,7 @@ export default function PostDetailPage() {
         });
 
         try {
-            await postService.toggleLike(postId);
+            await socialService.toggleLike(postId);
         } catch (error) {
             console.error('Like failed', error);
             fetchPost();
@@ -83,9 +84,9 @@ export default function PostDetailPage() {
 
     if (isTextOnly) {
         return (
-            <TextPostModal 
-                isOpen={true} 
-                onClose={() => router.back()} 
+            <TextPostModal
+                isOpen={true}
+                onClose={() => router.back()}
                 post={post}
                 onLike={handleLike}
             />
@@ -93,10 +94,10 @@ export default function PostDetailPage() {
     }
 
     return (
-        <Lightbox 
-            isOpen={true} 
-            onClose={() => router.back()} 
-            post={post} 
+        <Lightbox
+            isOpen={true}
+            onClose={() => router.back()}
+            post={post}
         />
     );
 }

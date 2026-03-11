@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Security.Claims;
+using MassTransit;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Sonixy.SocialGraphService.Api.GrpcServices;
 using Sonixy.SocialGraphService.Application.Services;
@@ -90,6 +91,25 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // Authorization
 builder.Services.AddAuthorization();
 
+// MassTransit (RabbitMQ)
+builder.Services.AddMassTransit(x =>
+{
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        var host = builder.Configuration["RabbitMQ:Host"] ?? "localhost";
+        var user = builder.Configuration["RabbitMQ:Username"] ?? "guest";
+        var pass = builder.Configuration["RabbitMQ:Password"] ?? "guest";
+
+        cfg.Host(host, "/", h =>
+        {
+            h.Username(user);
+            h.Password(pass);
+        });
+
+        cfg.ConfigureEndpoints(context);
+    });
+});
+
 // gRPC
 builder.Services.AddGrpc();
 
@@ -162,6 +182,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.MapGrpcService<SocialGraphGrpcService>();

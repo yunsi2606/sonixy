@@ -8,10 +8,20 @@ package post;
 
 service PostService {
   rpc GetPostsByIds (GetPostsByIdsRequest) returns (PostListResponse);
+  rpc GetLikedPostIds (GetLikedPostIdsRequest) returns (GetLikedPostIdsResponse);
 }
 
 message GetPostsByIdsRequest {
   repeated string post_ids = 1;
+}
+
+message GetLikedPostIdsRequest {
+  string current_user_id = 1;
+  repeated string post_ids = 2;
+}
+
+message GetLikedPostIdsResponse {
+  repeated string liked_post_ids = 1;
 }
 
 message PostListResponse {

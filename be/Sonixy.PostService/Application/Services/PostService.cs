@@ -218,6 +218,37 @@ public class PostService(
         return true;
     }
 
+    public async Task<List<string>> GetUserLikedPostIdsAsync(string userId, IEnumerable<string> postIds, CancellationToken cancellationToken = default)
+    {
+        if (!ObjectId.TryParse(userId, out var userObjectId))
+            return [];
+
+        var objectIds = new List<ObjectId>();
+        foreach (var id in postIds)
+        {
+            if (ObjectId.TryParse(id, out var objectId))
+            {
+                objectIds.Add(objectId);
+            }
+        }
+
+        if (objectIds.Count == 0) return [];
+
+        var spec = new PostsByIdsSpecification(objectIds);
+        var posts = await postRepository.FindAsync(spec, cancellationToken);
+        
+        var likedPostIds = new List<string>();
+        foreach (var post in posts)
+        {
+            if (post.LikedBy != null && post.LikedBy.Contains(userObjectId))
+            {
+                likedPostIds.Add(post.Id.ToString());
+            }
+        }
+
+        return likedPostIds;
+    }
+
     private async Task<List<PostDto>> EnrichPostsAsync(List<Post> posts, string? currentUserId, CancellationToken cancellationToken)
     {
         if (posts.Count == 0) return [];

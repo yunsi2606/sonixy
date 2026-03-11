@@ -11,15 +11,8 @@ namespace Sonixy.SocialGraphService.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class FollowsController : ControllerBase
+public class FollowsController(ISocialGraphService socialGraphService) : ControllerBase
 {
-    private readonly ISocialGraphService _socialGraphService;
-
-    public FollowsController(ISocialGraphService socialGraphService)
-    {
-        _socialGraphService = socialGraphService;
-    }
-
     /// <summary>
     /// Follow a user
     /// </summary>
@@ -34,7 +27,7 @@ public class FollowsController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-        await _socialGraphService.FollowUserAsync(userId, followingId);
+        await socialGraphService.FollowUserAsync(userId, followingId);
         return Ok(new { message = "User followed successfully" });
     }
 
@@ -50,7 +43,7 @@ public class FollowsController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-        await _socialGraphService.UnfollowUserAsync(userId, followingId);
+        await socialGraphService.UnfollowUserAsync(userId, followingId);
         return Ok(new { message = "User unfollowed successfully" });
     }
 
@@ -65,7 +58,7 @@ public class FollowsController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-        var isFollowing = await _socialGraphService.IsFollowingAsync(userId, followingId);
+        var isFollowing = await socialGraphService.IsFollowingAsync(userId, followingId);
         return Ok(new { isFollowing });
     }
 
@@ -77,7 +70,7 @@ public class FollowsController : ControllerBase
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFollowersCount(string userId)
     {
-        var count = await _socialGraphService.GetFollowersCountAsync(userId);
+        var count = await socialGraphService.GetFollowersCountAsync(userId);
         return Ok(new { count });
     }
 
@@ -89,7 +82,7 @@ public class FollowsController : ControllerBase
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFollowingCount(string userId)
     {
-        var count = await _socialGraphService.GetFollowingCountAsync(userId);
+        var count = await socialGraphService.GetFollowingCountAsync(userId);
         return Ok(new { count });
     }
 
@@ -101,7 +94,7 @@ public class FollowsController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFollowers(string userId, [FromQuery] int skip = 0, [FromQuery] int limit = 20)
     {
-        var followers = await _socialGraphService.GetFollowersAsync(userId, skip, limit);
+        var followers = await socialGraphService.GetFollowersAsync(userId, skip, limit);
         return Ok(followers);
     }
 
@@ -113,7 +106,7 @@ public class FollowsController : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<string>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFollowing(string userId, [FromQuery] int skip = 0, [FromQuery] int limit = 20)
     {
-        var following = await _socialGraphService.GetFollowingAsync(userId, skip, limit);
+        var following = await socialGraphService.GetFollowingAsync(userId, skip, limit);
         return Ok(following);
     }
 
@@ -128,7 +121,7 @@ public class FollowsController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-        var mutuals = await _socialGraphService.GetMutualFollowsAsync(userId, skip, limit);
+        var mutuals = await socialGraphService.GetMutualFollowsAsync(userId, skip, limit);
         return Ok(mutuals);
     }
 
@@ -143,7 +136,7 @@ public class FollowsController : ControllerBase
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-        var isMutual = await _socialGraphService.IsMutualFollowAsync(userId, targetId);
+        var isMutual = await socialGraphService.IsMutualFollowAsync(userId, targetId);
         return Ok(new { isMutual });
     }
 }

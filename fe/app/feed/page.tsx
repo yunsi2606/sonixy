@@ -7,6 +7,7 @@ import { PostSkeleton } from '@/components/skeletons/PostSkeleton';
 import { postService } from '@/services/post.service';
 import type { Post } from '@/types/api';
 import { Loader2 } from 'lucide-react';
+import { socialService } from '@/services/social.service';
 
 export default function FeedPage() {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -83,7 +84,7 @@ export default function FeedPage() {
         }));
 
         try {
-            await postService.toggleLike(id);
+            await socialService.toggleLike(id)
         } catch (error) {
             // Revert on failure
             console.error('Like failed', error);

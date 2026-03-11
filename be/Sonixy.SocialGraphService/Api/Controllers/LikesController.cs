@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using MassTransit;
+using Sonixy.Shared.Events;
+using Sonixy.SocialGraphService.Application.Services;
 
 namespace Sonixy.SocialGraphService.Api.Controllers;
 
@@ -10,43 +13,30 @@ namespace Sonixy.SocialGraphService.Api.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class LikesController : ControllerBase
+public class LikesController(ISocialGraphService socialGraphService, IPublishEndpoint publishEndpoint)
+    : Controller
 {
-    private readonly Application.Services.ISocialGraphService _socialGraphService;
-
-    public LikesController(Application.Services.ISocialGraphService socialGraphService)
-    {
-        _socialGraphService = socialGraphService;
-    }
-
     /// <summary>
-    /// Like a post
+    /// Toggle like a post
     /// </summary>
     [HttpPost("{postId}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> LikePost(string postId)
+    public async Task<IActionResult> ToggleLike(string postId, CancellationToken ct = default)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (string.IsNullOrEmpty(userId)) return Unauthorized();
 
-        await _socialGraphService.LikePostAsync(userId, postId);
-        return Ok(new { message = "Post liked" });
-    }
-
-    /// <summary>
-    /// Unlike a post
-    /// </summary>
-    [HttpDelete("{postId}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-    public async Task<IActionResult> UnlikePost(string postId)
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrEmpty(userId)) return Unauthorized();
-
-        await _socialGraphService.UnlikePostAsync(userId, postId);
-        return Ok(new { message = "Post unliked" });
+        var liked = await socialGraphService.ToggleLikeAsync(userId, postId, ct);
+        await publishEndpoint.Publish(new UserInteractionEvent(
+            UserId: userId,
+            TargetId: postId,
+            TargetType: TargetType.Post,
+            ActionType: UserActionType.Like,
+            Timestamp: DateTime.UtcNow
+        ), ct);
+        
+        return Ok(new { liked });
     }
 
     /// <summary>
@@ -57,7 +47,7 @@ public class LikesController : ControllerBase
     [ProducesResponseType(typeof(object), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetLikeCount(string postId)
     {
-        var count = await _socialGraphService.GetLikeCountAsync(postId);
+        var count = await socialGraphService.GetLikeCountAsync(postId);
         return Ok(new { count });
     }
 }

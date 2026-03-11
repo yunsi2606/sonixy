@@ -43,16 +43,10 @@ export const socialService = {
     },
 
     // Likes
-    async likePost(postId: string): Promise<void> {
+    async toggleLike(postId: string): Promise<void> {
         const token = authService.getAccessToken();
         if (!token) throw new Error('Not authenticated');
         await apiClient.post(`${SOCIAL_BASE}/likes/${postId}`, {}, token);
-    },
-
-    async unlikePost(postId: string): Promise<void> {
-        const token = authService.getAccessToken();
-        if (!token) throw new Error('Not authenticated');
-        await apiClient.delete(`${SOCIAL_BASE}/likes/${postId}`, token);
     },
 
     async getLikeCount(postId: string): Promise<number> {
