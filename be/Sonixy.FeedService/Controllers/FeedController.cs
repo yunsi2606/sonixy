@@ -61,14 +61,20 @@ public class FeedController(IConnectionMultiplexer redis, IPostClient postClient
         var posts = new List<PostDto>();
         var missingIds = new List<string>();
 
+        var jsonOptions = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         foreach (var id in postIds)
         {
             var cacheKey = $"sonixy:feed:post:{id}";
             var cached = await db.StringGetAsync(cacheKey);
             if (cached.HasValue)
             {
-                var dto = JsonSerializer.Deserialize<PostDto>(cached.ToString());
-                if (dto != null) { posts.Add(dto); continue; }
+                var dto = JsonSerializer.Deserialize<PostDto>(cached.ToString(), jsonOptions);
+                // Only accept fully formed DTOs from cache. If it misses AuthorUsername, it's the incomplete cache from consumer.
+                if (dto != null && !string.IsNullOrEmpty(dto.Id) && !string.IsNullOrEmpty(dto.AuthorUsername)) 
+                { 
+                    posts.Add(dto); 
+                    continue; 
+                }
             }
             missingIds.Add(id);
         }
@@ -78,6 +84,18 @@ public class FeedController(IConnectionMultiplexer redis, IPostClient postClient
         {
             var fetched = await postClient.GetPostsByIdsAsync(missingIds);
             posts.AddRange(fetched);
+
+            // Cache the fully formed posts back to Redis for future queries
+            var batch = db.CreateBatch();
+            var tasks = new List<Task>();
+            foreach (var post in fetched)
+            {
+                var cacheKey = $"sonixy:feed:post:{post.Id}";
+                var postCacheData = JsonSerializer.Serialize(post);
+                tasks.Add(batch.StringSetAsync(cacheKey, postCacheData, TimeSpan.FromDays(7)));
+            }
+            batch.Execute();
+            await Task.WhenAll(tasks);
         }
 
         // Re-order posts to match timeline order (sorted by HotScore descending)

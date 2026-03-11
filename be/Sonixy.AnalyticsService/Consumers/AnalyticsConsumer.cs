@@ -1,4 +1,6 @@
 using MassTransit;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
 using Sonixy.Shared.Events;
 
@@ -35,7 +37,9 @@ public class AnalyticsConsumer : IConsumer<UserInteractionEvent>
 
 public class UserInteractionLog
 {
-    public object Id { get; set; }
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string Id { get; set; }
     public string UserId { get; set; }
     public string TargetId { get; set; }
     public string TargetType { get; set; }

@@ -1,0 +1,30 @@
+﻿warn: Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository[60]
+      Storing keys in a directory '/root/.aspnet/DataProtection-Keys' that may not be persisted outside of the container. Protected data will be unavailable when container is destroyed. For more information go to https://aka.ms/aspnet/dataprotectionwarning
+info: MassTransit[0]
+      Configured endpoint UserInteraction, Consumer: Sonixy.FeedService.Consumers.UserInteractionConsumer
+info: MassTransit[0]
+      Configured endpoint PostCreated, Consumer: Sonixy.FeedService.Consumers.PostCreatedConsumer
+warn: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[35]
+      No XML encryptor configured. Key {7a06244a-755e-4063-bbb2-fe9eb6d090ba} may be persisted to storage in unencrypted form.
+warn: Microsoft.AspNetCore.Hosting.Diagnostics[15]
+      Overriding HTTP_PORTS '8080' and HTTPS_PORTS ''. Binding to values defined by URLS instead 'http://+:8093'.
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://[::]:8093
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: /app
+info: MassTransit[0]
+      Bus started: rabbitmq://rabbitmq/
+info: System.Net.Http.HttpClient.PostServiceClient.LogicalHandler[100]
+      Start processing HTTP request POST http://post-service:8190/post.PostService/GetPostsByIds
+info: System.Net.Http.HttpClient.PostServiceClient.ClientHandler[100]
+      Sending HTTP request POST http://post-service:8190/post.PostService/GetPostsByIds
+info: System.Net.Http.HttpClient.PostServiceClient.ClientHandler[101]
+      Received HTTP response headers after 1205.5725ms - 200
+info: System.Net.Http.HttpClient.PostServiceClient.LogicalHandler[101]
+      End processing HTTP request after 1215.3575ms - 200
+info: MassTransit[0]
+      Usage Telemetry: {"id":"01000000-2f2c-53b6-d1b7-08de7ebef451","created":"2026-03-10T16:06:14.1079205\u002B00:00","host":{"framework_version":"10.0.3","mass_transit_version":"8.5.7.0","operating_system_version":"Unix 5.15.153.1","time_zone_info":"(UTC) Coordinated Universal Time","commit_hash":"855cf1752c94ca9498e0c45ce8d09fdc9e957dd6","container":"Docker"},"bus":[{"created":"2026-03-10T16:06:14.1104797\u002B00:00","configured":"2026-03-10T16:06:14.3144939\u002B00:00","started":"2026-03-10T16:06:14.8171396\u002B00:00","name":"IBus","endpoints":[{"name":"UserInteraction","type":"RabbitMQ","prefetch_count":16,"consumer_count":1,"message_count":1},{"name":"PostCreated","type":"RabbitMQ","prefetch_count":16,"consumer_count":1,"message_count":1},{"name":"_bus_","type":"RabbitMQ","prefetch_count":16}]}]}
