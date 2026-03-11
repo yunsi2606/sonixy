@@ -114,4 +114,18 @@ public class SocialGraphGrpcService(ISocialGraphService socialGraphService)
         response.UserIds.AddRange(userIds);
         return response;
     }
+
+    public override async Task<GetPostSocialStatsResponse> GetPostSocialStats(
+        GetPostSocialStatsRequest request,
+        ServerCallContext context)
+    {
+        var stats = await socialGraphService.GetPostSocialStatsAsync(
+            request.UserId,
+            request.PostIds,
+            context.CancellationToken);
+
+        var res = new GetPostSocialStatsResponse();
+        res.Stats.AddRange(stats);
+        return res;
+    }
 }

@@ -1,3 +1,5 @@
+using Sonixy.Shared.Protos;
+
 namespace Sonixy.SocialGraphService.Application.Services;
 
 public interface ISocialGraphService
@@ -17,6 +19,9 @@ public interface ISocialGraphService
     Task<IEnumerable<string>> GetFollowingAsync(string userId, int skip = 0, int limit = 20, CancellationToken cancellationToken = default);
     Task<IEnumerable<string>> GetMutualFollowsAsync(string userId, int skip = 0, int limit = 20, CancellationToken cancellationToken = default);
     Task<bool> IsMutualFollowAsync(string user1, string user2, CancellationToken cancellationToken = default);
+
+    Task<IEnumerable<PostSocialStat>> GetPostSocialStatsAsync(string userId, IEnumerable<string> postIds,
+        CancellationToken cancellationToken = default);
     
     // Suggested users (Friends of Friends algorithm)
     Task<IEnumerable<string>> GetSuggestedUsersAsync(string userId, int limit = 10, CancellationToken cancellationToken = default);

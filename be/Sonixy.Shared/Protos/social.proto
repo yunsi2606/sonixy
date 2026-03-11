@@ -26,6 +26,8 @@ service SocialGraphService {
 
   // Get suggested users to follow (Friends of Friends algorithm)
   rpc GetSuggestedUsers (GetSuggestedUsersRequest) returns (GetSuggestedUsersResponse);
+
+  rpc GetPostSocialStats (GetPostSocialStatsRequest) returns (GetPostSocialStatsResponse);
 }
 
 message GetFollowingRequest {
@@ -88,4 +90,19 @@ message GetSuggestedUsersRequest {
 
 message GetSuggestedUsersResponse {
   repeated string user_ids = 1;
+}
+
+message GetPostSocialStatsRequest {
+  string user_id = 1;
+  repeated string post_ids = 2;
+}
+
+message PostSocialStat {
+  string post_id = 1;
+  int64 like_count = 2;
+  bool is_liked = 3;
+}
+
+message GetPostSocialStatsResponse {
+  repeated PostSocialStat stats = 1;
 }

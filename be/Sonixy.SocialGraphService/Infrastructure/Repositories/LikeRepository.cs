@@ -60,6 +60,37 @@ public class LikeRepository : ILikeRepository
             .CountDocumentsAsync(l => l.PostId == postId, cancellationToken: cancellationToken);
     }
 
+    public async Task<Dictionary<string, long>> GetLikeCountsAsync(IEnumerable<ObjectId> postIds, CancellationToken cancellationToken = default)
+    {
+        var result = await _collection
+            .Aggregate()
+            .Match(l => postIds.Contains(l.PostId))
+            .Group(l => l.PostId, g => new
+            {
+                PostId = g.Key,
+                Count = g.LongCount()
+            })
+            .ToListAsync(cancellationToken);
+
+        return result.ToDictionary(
+            x => x.PostId.ToString(),
+            x => x.Count);
+    }
+    
+    public async Task<HashSet<string>> GetLikedPostsAsync(
+        ObjectId userId,
+        IEnumerable<ObjectId> postIds)
+    {
+        var liked = await _collection
+            .Find(l => l.UserId == userId && postIds.Contains(l.PostId))
+            .Project(l => l.PostId)
+            .ToListAsync();
+
+        return liked
+            .Select(p => p.ToString())
+            .ToHashSet();
+    }
+
     public async Task<IEnumerable<Like>> FindAsync(ISpecification<Like> specification, CancellationToken cancellationToken = default)
     {
         var query = _collection.Find(specification.ToFilter());

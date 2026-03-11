@@ -9,4 +9,6 @@ public interface ILikeRepository : IRepository<Like>
     Task<Like?> GetLikeAsync(ObjectId userId, ObjectId postId, CancellationToken cancellationToken = default);
     Task<bool> HasLikedAsync(ObjectId userId, ObjectId postId, CancellationToken cancellationToken = default);
     Task<long> GetLikeCountAsync(ObjectId postId, CancellationToken cancellationToken = default);
+    Task<Dictionary<string, long>> GetLikeCountsAsync(IEnumerable<ObjectId> postIds, CancellationToken cancellationToken = default);
+    Task<HashSet<string>> GetLikedPostsAsync(ObjectId userId, IEnumerable<ObjectId> postIds);
 }

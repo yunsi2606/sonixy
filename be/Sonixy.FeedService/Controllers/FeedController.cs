@@ -11,7 +11,10 @@ namespace Sonixy.FeedService.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
-public class FeedController(IConnectionMultiplexer redis, IPostClient postClient) : ControllerBase
+public class FeedController(
+    IConnectionMultiplexer redis,
+    IPostClient postClient,
+    ISocialClient socialClient) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> GetFeed(
@@ -108,17 +111,28 @@ public class FeedController(IConnectionMultiplexer redis, IPostClient postClient
         // Dynamically update IsLiked for the current user
         if (orderedPosts.Count > 0)
         {
-            var likedPostIds = await postClient.GetLikedPostIdsAsync(userId, orderedPosts.Select(p => p.Id));
-            for (int i = 0; i < orderedPosts.Count; i++)
+            var postIdsBatch = orderedPosts.Select(p => p.Id).ToList();
+            var stats = await socialClient.GetPostSocialStatsAsync(userId, postIdsBatch);
+
+            for (var i = 0; i < orderedPosts.Count; i++)
             {
                 var post = orderedPosts[i];
-                if (likedPostIds.Contains(post.Id))
+                
+                if (stats.TryGetValue(post.Id, out var stat))
                 {
-                    orderedPosts[i] = post with { IsLiked = true };
+                    orderedPosts[i] = post with
+                    {
+                        LikeCount = stat.LikeCount,
+                        IsLiked = stat.IsLiked,
+                    };
                 }
                 else
                 {
-                    orderedPosts[i] = post with { IsLiked = false };
+                    orderedPosts[i] = post with
+                    {
+                        LikeCount = 0,
+                        IsLiked = false,
+                    };
                 }
             }
         }

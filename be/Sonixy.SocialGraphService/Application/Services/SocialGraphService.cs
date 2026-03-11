@@ -1,4 +1,5 @@
 using MongoDB.Bson;
+using Sonixy.Shared.Protos;
 using Sonixy.SocialGraphService.Domain.Entities;
 using Sonixy.SocialGraphService.Domain.Repositories;
 
@@ -209,5 +210,40 @@ public class SocialGraphService(IFollowRepository followRepository, ILikeReposit
             .OrderByDescending(x => x.Value)
             .Take(limit)
             .Select(x => x.Key);
+    }
+
+    public async Task<IEnumerable<PostSocialStat>> GetPostSocialStatsAsync(string userId, IEnumerable<string> postIds,
+        CancellationToken cancellationToken = default)
+    {
+        var stats = new List<PostSocialStat>();
+        
+        if (!ObjectId.TryParse(userId, out var userOid))
+            return [];
+        
+        var postOids = postIds
+            .Where(id => ObjectId.TryParse(id, out _))
+            .Select(ObjectId.Parse)
+            .ToList();
+        
+        if (postOids.Count == 0)
+            return [];
+        
+        var likeCounts = await likeRepository.GetLikeCountsAsync(postOids, cancellationToken);
+        
+        var likedPosts = await likeRepository.GetLikedPostsAsync(userOid, postOids);
+        
+        foreach (var postId in postOids)
+        {
+            var postIdStr = postId.ToString();
+
+            stats.Add(new PostSocialStat
+            {
+                PostId = postIdStr,
+                LikeCount = likeCounts.GetValueOrDefault(postIdStr, 0),
+                IsLiked = likedPosts.Contains(postIdStr)
+            });
+        }
+
+        return stats;
     }
 }
